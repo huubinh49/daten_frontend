@@ -1,0 +1,70 @@
+.modal-dialog{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    $header-padding: 15px;
+    margin: 0;
+    padding: 0;
+    min-width: 400px;
+    .modal-header{
+        position:relative;
+        padding: $header-padding;
+        height: 60px;
+        .modal-logo{
+            position: absolute;
+            top: $header-padding;
+            left: 50%;
+            transform: translate(-50%, 0);
+            
+            width: 32px;
+            height: 32px;
+        }
+    }
+    .modal-body{
+        display: flex;
+        flex-flow: column;  
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px 0;
+        span, .button{  
+            margin: 0;
+            width: 100%;
+            max-width: 400px;
+            height: 60px;
+        }
+        .button{
+            display: block;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            color:white;
+            font-size:0.8rem;
+            font-weight: 500;
+            background-color: black;
+            border:none;
+            &:hover{
+                opacity: 0.6;
+            }
+            transition: all 0.3s;
+
+            &__socialLink{
+                position: relative;
+                i{
+                    position: absolute;
+                    font-size: 1.5rem;
+                    right: 20px;
+                }
+                &.facebookLink{
+                    background-color:rgb(89, 89, 255);
+                }
+                &.googleLink{
+                    background-color:rgb(220, 0, 0);
+                }
+            }
+        }
+    }
+}

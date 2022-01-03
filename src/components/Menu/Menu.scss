@@ -1,0 +1,66 @@
+@import "../../App.scss";
+
+.menu{
+    display: block;
+    width: $menuWidth;
+    height: 100vh;
+    border-right: 1px solid gray;
+    overflow-x: hidden;
+    @media screen and (max-width: 768px) {
+        width: 0px;
+    }
+    
+    &-header{
+        width: 100%;
+        height: $menuHeaderHeight;
+        background-color: black;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        .header-profile{
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            .profile-name{
+                color: white;
+                font-size: 1rem;
+                margin: 0;
+            }
+        }
+        .header-action{
+            width: 36px;
+            height: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    }
+    &-body{
+        .nav{
+            height: $navTabsHeight;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            .nav-item{
+                button{
+                    padding:  1px 10px 1px 10px;
+                    border: none;
+                    font-size: 1.2em;
+                    color: grey;
+                    &:hover{
+                        border: none;
+                    }
+                    &.active{
+                        color:black;
+                        border: none;
+                        border-bottom: 3px solid black;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,23 @@
+@import "../../App.scss";
+.message{
+    height: calc(100vh - #{$navTabsHeight} - #{$menuHeaderHeight});
+    -ms-overflow-style: none !important;  /* IE and Edge */
+    scrollbar-width: 2px !important;  /* Firefox */
+    scroll-behavior: smooth;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+    .card{
+        .card-name{
+            color: black;
+        }
+        &-content, &-avatar{
+            pointer-events: none;   
+            
+        }
+    }
+    .card:hover{
+        border-right: 5px solid black;
+        
+    }
+}

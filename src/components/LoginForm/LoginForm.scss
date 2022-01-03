@@ -1,0 +1,99 @@
+.modal-dialog{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    $header-padding: 15px;
+    margin: 0;
+    padding: 0;
+    min-width: 300px;
+    .modal-header{
+        position:relative;
+        padding: $header-padding;
+        height: 60px;
+        .modal-logo{
+            position: absolute;
+            top: $header-padding;
+            left: 50%;
+            transform: translate(-50%, 0);
+            
+            width: 32px;
+            height: 32px;
+        }
+    }
+    .modal-body{
+        display: flex;
+        flex-flow: column;  
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 0;
+        form{
+            width: 100%;
+            width: 320px;
+            .mb-3{
+                margin-bottom: 0 !important;
+            }
+            input, input:focus, input:focus-visible{
+                outline: 0;
+                -webkit-box-shadow: none;
+                box-shadow: none;
+                &.normal{
+                    border: 3px solid gray;
+                    & ~ .invalid-feedback{
+                        display: none;
+                    }
+                    & ~ .valid-feedback{
+                        display: none;
+                    }
+                }
+                &.error{
+                    border: 3px solid red;
+                    & ~ .invalid-feedback{
+                        display: block;
+                    }
+                    & ~ .valid-feedback{
+                        display: none;
+                    }
+                }
+                &.valid{
+                    border: 3px solid #9ccc65;
+                    & ~ .invalid-feedback{
+                        display: none;
+                    }
+                    & ~ .valid-feedback{
+                        display: block;
+                    }
+                }
+            }
+        }
+        .modal-action{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            button{
+                height: 40px;
+                width: 100px;
+                border: none;
+                color: white;
+                &:hover{
+                    opacity: 0.6;
+                }
+            }
+            .button-signup{
+                background-color: red;
+            }
+            .button-login{
+                background-color: navy;
+            }
+        }
+    }
+    .modal-footer{
+        span, a{
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+    }
+}

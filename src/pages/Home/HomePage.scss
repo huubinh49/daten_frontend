@@ -1,0 +1,134 @@
+.content{
+    &_title{
+        color: white;
+        font-size: 2.5em;
+    }
+    &_subtitle{
+        color: white;
+        font-size: 1.3em;
+    }
+    &_description{
+        color: rgb(201, 201, 201);
+        font-size: 1em;
+    }
+    &_button{
+        font-size: 0.85em;
+        color: rgb(201, 201, 201);
+        height: 36px;
+        width: 84px;
+        background-color: transparent;
+        box-shadow: none;
+        border: 1px solid white;
+        &:hover{
+            background-color: white;
+            color:black;
+            transition: 0.25s;
+        }
+
+    }
+}
+#home{
+    position: relative;
+    background-color: black;
+    width: 100%;
+    overflow: hidden;
+    .home_col{
+        min-height: 500px;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .home_couple{
+            width: 256px;
+            height: 256px;
+        }
+        @media (max-width: 991.98px) {
+            .home_couple{
+                width: 300px;
+                height: 300px;
+            }
+            &-content{
+                padding: 40px 10px;
+                height: max-content;
+                min-height: max-content;
+            }
+        }
+        
+        
+    }
+    
+    .content{
+        margin: 40px;
+    }
+}
+
+#features{
+    font-size: 14px;
+    .features_col{
+        overflow: hidden;
+        height: 100vh;
+        min-height: 360px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 30px;
+        .content{
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            &_title, &_description{
+                text-align: center;
+            }
+            
+        }
+    }
+}
+
+#story{
+    background-color: black;
+    $padding: 40px;
+    
+
+    .story_col{
+        padding: $padding;
+        min-height: 400px;
+        height: 80vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .content{
+            display: flex;
+            flex-flow: column;
+            gap: 10px;
+        }
+    }
+    @media (max-width: 991.98px) {
+        .story_col{
+            height: max-content; 
+            &-content{
+                min-height: max-content;
+            }
+        }
+    }
+    .image-wrapper{
+        position: relative;
+        img{
+            width: 256px;
+            height: 256px;
+        }
+        .col_item{
+            position: absolute;
+            
+            &-top{
+                top: $padding;
+                left: $padding;
+            }
+            &-bottom{
+                bottom: $padding;
+                right: $padding;
+            }
+        }
+    }
+
+    
+}

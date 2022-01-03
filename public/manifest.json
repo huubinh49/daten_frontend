@@ -8,12 +8,37 @@
       "type": "image/x-icon"
     },
     {
+      "src": "home_bg.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "private_bg.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "watch_movie_bg.png",
+      "sizes": "778x500",
+      "type": "image/png"
+    },
+    {
+      "src": "home_couple.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
       "src": "logo192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
       "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "add.png",
       "type": "image/png",
       "sizes": "512x512"
     }

@@ -1,31 +1,18 @@
-import React, { createContext, useState } from "react";
+import * as authActions from "../redux/authentication/auth_actions";
+import { useSelector, useDispatch, shallowEqual } from 'react-redux';
 
-const authContext = createContext();
-
-function useAuth() {
+export default function useAuth() {
   const reduxProps = useSelector(state=>({
-    isAuthenticated: (state.user.token!=null)? true:false
+    isAuthenticated: (state.auth.token!=null)? true:false
   }), shallowEqual);
 
   const dispatch = useDispatch()
 
   return {
-    isAuthenticated,
-    tryAutoSignIn=  ()=>{
+    isAuthenticated: reduxProps.isAuthenticated,
+    tryAutoSignIn:  ()=>{
         dispatch(authActions.checkAuthentication())
     },
   };
 }
-export function AuthProvider({ children }) {
-    const auth = useAuth();
-  
-    return (
-      <authContext.Provider value={auth}>
-        {children}
-      </authContext.Provider>
-    );
-  }
-  
-  export default function AuthConsumer() {
-    return React.useContext(authContext);
-  }
+

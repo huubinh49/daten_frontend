@@ -69,8 +69,9 @@
             }
         }
         .profile-photo{
-            position: relative;
+            
             .photo-label{
+                position: relative;
                 cursor: pointer;
                 width: 100%;
                 height: 160px;
@@ -81,16 +82,29 @@
                 display: none;
             }
             .photo-icon{
-                pointer-events: all;
-                width: 24px;
-                height: 24px;
+                cursor: pointer;
+                width: 28px;
+                height: 28px;
                 position: absolute;
-                right: 0;
-                bottom: 0;
-                transform: translate(50%, -50%);
+                
+                &:hover{
+                    width: 32px;
+                    height: 32px;
+                }
+             
                 img{
                     width: 100%;
                     height: 100%;
+                }
+                &-add{
+                    right: 0;
+                    bottom: 0;
+                    transform: translate(50%, 25%);
+                }
+                &-remove{
+                    right: 0;
+                    top: 0;
+                    transform: translate(50%, -50%);
                 }
             }
         }

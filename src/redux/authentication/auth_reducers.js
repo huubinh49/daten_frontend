@@ -1,10 +1,5 @@
+import { updateState } from '../utils'
 import * as actionTypes from './actionTypes'
-export const updateState = (oldState, props)=>{
-    return{
-        ...oldState,
-        ...props
-    }
-}
 
 const initialState = {
     token:null,

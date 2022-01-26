@@ -1,6 +1,7 @@
 import React, { memo, useContext, useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import useTargetUser from '../../hooks/targetUser';
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import "./Message.scss"
 
@@ -49,6 +50,7 @@ const Message = memo((props) => {
     const messageRef = useRef(null);
     const [chatting, setChatting] = useContext(ChattingContext);
     
+    // TODO: Write get list user that already talked together
     const loadMore = () => {
         console.log("load more!")
         setMessages(prevMessages =>(
@@ -74,7 +76,7 @@ const Message = memo((props) => {
             }
         }
         messageRef.current.addEventListener("scroll",scrollHandler );
-
+// TODO: Write get list user that already talked together
         setMessages(
             new Array(10).fill({
                 'user_id': "111",
@@ -95,7 +97,9 @@ const Message = memo((props) => {
             <Container>
                 <Row >
                     {messages.map((message, idx) => <Col sm={12} style={{padding: "0px"}}>
-                        <Link to={`/dating/messages/${props.user_id}`} onClick={() => setChatting(true)} >
+                        <Link to={`/dating/messages/${message.user_id}`} onClick={() => {
+                            setChatting(true)
+                        }} >
                             <MessageCard {...message} key ={idx} is_private = {props.is_private}/>
                         </Link>
                     </Col>)}

@@ -1,4 +1,3 @@
-// TODO: Crete profile form
 import React, { createRef, memo, useEffect, useRef, useState } from 'react'
 import { Form, Container, Row, Col, Image, Alert } from 'react-bootstrap'
 import axiosClient from '../../api/axiosClient';
@@ -6,6 +5,8 @@ import "./ProfileForm.scss"
 import { Formik } from 'formik';
 import * as yup from "yup";
 import Button from '@restart/ui/esm/Button';
+import { useNavigate } from 'react-router';
+import profileAPI from '../../api/profileAPI';
 
 const dobLowerBound = new Date();
 dobLowerBound.setFullYear(dobLowerBound.getFullYear() - 16);
@@ -31,6 +32,8 @@ function ProfileForm() {
     const [message, setMessage] = useState('')
     const [showAlert, setShowAlert] = useState(false);
     const [currentPosition, setCurrentPosition] = useState([0, 0])
+    const navigate = useNavigate();
+
     const handleShowAlert = (errorMessage) => {
         setMessage( () => `${errorMessage}`)
         setShowAlert(true);
@@ -63,13 +66,22 @@ function ProfileForm() {
             formData.append("interested", formikProps.values.interested);
             formData.append("position", currentPosition);
             try {
-                const res = await axiosClient.post(
-                    "http://localhost:5000/profile",
-                    formData
-                );
-                console.log(res);
+                const res = await profileAPI.create(formData);
+               if(res.error){
+                   handleShowAlert(res.error)
+               }else{
+                    sessionStorage.setItem("profile", JSON.stringify(res.profile));
+                    navigate("/dating")
+               }
             } catch (ex) {
-                console.log(ex);
+                if(ex.response.status != 409){
+                    handleShowAlert(ex.response.data.error)
+                    if(ex.response.data.error === "Invalid token"){
+                        navigate("/")
+                    }
+                }else{
+                    navigate("/dating")
+                }
             }
         }
        
@@ -248,7 +260,27 @@ function ProfileForm() {
                                                             backgroundPosition: '50% 0%',
                                                             backgroundRepeat: "no-repeat",
                                                             backgroundSize: "cover",
-                                                        }}></Form.Label>
+                                                        }}>
+                                                            {
+                                                                photosUrl[idx]? 
+                                                                <div onClick = {(event) =>{
+                                                                    event.preventDefault();
+                                                                    setPhotos((oldPhotos) => {
+                                                                        oldPhotos[idx] = null
+                                                                        return [...oldPhotos]
+                                                                    })
+                                                                    setPhotosUrl((oldPhotosUrl) => {
+                                                                        oldPhotosUrl[idx] = null
+                                                                        return [...oldPhotosUrl]
+                                                                    })
+                                                                }} className = "photo-icon photo-icon-remove">
+                                                                    <Image src ={`${process.env.PUBLIC_URL}/remove.png`}></Image>
+                                                                </div>:
+                                                                <div className = "photo-icon photo-icon-add">
+                                                                    <Image src ={`${process.env.PUBLIC_URL}/add.png`}></Image>
+                                                                </div>
+                                                            }
+                                                        </Form.Label>
                                                         <Form.Control onChange={(event) => {
                                                             const photo = event.target.files[0];
                                                             setPhotos((oldPhotos) => {
@@ -256,14 +288,12 @@ function ProfileForm() {
                                                                 return [...oldPhotos]
                                                             })
                                                             setPhotosUrl((oldPhotosUrl) => {
-                                                                oldPhotosUrl[idx] = URL.createObjectURL(photo)
+                                                                oldPhotosUrl[idx] = photo? URL.createObjectURL(photo) : null
                                                                 return [...oldPhotosUrl]
                                                             })
                                                         }}
                                                             type="file" name="file" accept="image/*" />
-                                                        <div className = "photo-icon">
-                                                            <Image src ={`${process.env.PUBLIC_URL}/add.png`}></Image>
-                                                        </div>
+                                                      
                                                     </Form.Group>
                                                 </Col>))
                                         }

@@ -7,7 +7,7 @@ export const authStart = ()=>{
     }
 }
 export const authSuccess = (token)=>{
-    localStorage.setItem('user_id', decode(token).id)
+    sessionStorage.setItem('user_id', decode(token).id)
     return{
         type:actionTypes.AUTH_SUCCESS,
         token: token
@@ -21,7 +21,7 @@ export const authFail = (error)=>{
 }
 
 export const authLogout = ()=>{
-    localStorage.removeItem('user_id')
+    sessionStorage.removeItem('user_id')
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('expiration');
@@ -30,7 +30,20 @@ export const authLogout = ()=>{
     };
 }
 
-
+const isAuthenticated = () =>{
+    const access = localStorage.getItem("access_token") 
+        const refresh = localStorage.getItem("refresh_token")
+        if(!access && !refresh){
+            return false;
+        }else{
+            const exp_refresh = decode(refresh).exp;
+            const exp_access = decode(access).exp;
+            if(exp_refresh*1000 <= new Date().getTime() || exp_access*1000 <= new Date().getTime()){
+                return false;
+            }
+            return true;
+        }
+}
 export const checkAuthentication = ()=>{
     return dispatch =>{
         const access = localStorage.getItem("access_token") 
@@ -119,8 +132,8 @@ export const obtainNewAccessToken = (refresh_token)=>{
     return dispatch =>{
         dispatch(authStart())
         const formData = new FormData();
-        formData.append('refresh', refresh_token);
-        axiosClient.post('obtain/token/',formData,{
+        formData.append('refresh_token', refresh_token);
+        axiosClient.post('/auth/refresh-token',formData,{
             headers: {
                 "Content-Type": "multipart/form-data",
             }

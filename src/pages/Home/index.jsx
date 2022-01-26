@@ -1,24 +1,51 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Col, Container, Image, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header'
 import LoginForm from '../../components/LoginForm/LoginForm';
 import LoginModal from '../../components/LoginModal/LoginModal';
+import useAuth from '../../hooks/auth';
+import { useNavigate } from 'react-router';
 import "./HomePage.scss";
+import axiosClient from '../../api/axiosClient';
 
 const HomePage = (props) => {
-
+    const navigate = useNavigate();
     // Variables for control login modal
     const [showLoginModal, setLoginModalShow] = useState(false);
     const [fullscreenModal, setFullscreenModal] = useState(true);
+    const {isAuthenticated, tryAutoSignIn} = useAuth();
     const closeLoginModal = () => setLoginModalShow(false);
-    const openLoginModal = () => {
-        setFullscreenModal("md-down")    
-        setLoginModalShow(true)
+    const openLoginModal = async () => {
+        const user_id = sessionStorage.getItem("user_id")
+        if (isAuthenticated && user_id) {
+            try {
+                const res = await axiosClient.get(
+                    "http://localhost:5000/profile",{
+                      params: {
+                            "user_id": user_id
+                        }
+                    }
+                );
+                console.log(res)
+                if(res.profile != null){
+                    sessionStorage.setItem("profile", JSON.stringify(res.profile));
+                    navigate("/dating")
+                }else{
+                    navigate("/profile")                    
+                }
+            } catch (error) {
+                console.log(error)
+            }   
+        }else{
+            setFullscreenModal("md-down")    
+            setLoginModalShow(true)   
+        }
     };
    
-    
+    useEffect(() => {
+        tryAutoSignIn()
+    }, [])
     // Variables for control login form
     const [showLoginForm, setLoginFormShow] = useState(false);
     const [fullscreenForm, setFullscreenForm] = useState(true);

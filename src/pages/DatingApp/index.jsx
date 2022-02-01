@@ -11,7 +11,6 @@ import useAuth from '../../hooks/auth';
 export default function DatingApp(props) {
     const [chatting, setChatting] = useState(false);
     const navigate = useNavigate()
-    const [currentTarget, setCurrentTarget] = useState(null);
     
     const {
         isAuthenticated, tryAutoSignIn
@@ -29,7 +28,7 @@ export default function DatingApp(props) {
     return(
         <div className="app">
             <ChattingContext.Provider value={[chatting, setChatting]}>
-                <Menu updateTarget={updateTarget} />
+                <Menu />
                 <section className="deck">
                     
                         <Routes>

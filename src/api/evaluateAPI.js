@@ -1,17 +1,18 @@
-const axiosClient = require("./axiosClient");
+const { default: axiosClient } = require("./axiosClient");
 
 class EvaluateAPI{
     url = 'evaluate';
-    // check 2 users are matched
-    evaluate = (user_id, target_id, evaluation) =>{
-        
-        return axiosClient.get(url, {
+    // get evaluating profiles
+    get = (per_page = 10, distance = 20) => {
+        return axiosClient.get(`${this.url}/all`, {
             params: {
-                'user_id' : user_id,
-                'target_id' : target_id,
-                'evaluation': evaluation
+                'per_page': per_page,
+                'distance': distance
             }
         })
+    }
+    vote = (target_id, is_liked) =>{
+        return axiosClient.post(`${this.url}`)
     }
 }
 const evaluateAPI = new EvaluateAPI()

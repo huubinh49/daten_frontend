@@ -89,7 +89,7 @@ function ProfileForm() {
     useEffect(() => {
         if(navigator.geolocation)
         navigator.geolocation.getCurrentPosition((position) => {
-            setCurrentPosition(()=> [position.coords.latitude, position.coords.longitude])
+            setCurrentPosition(()=> [position.coords.longitude, position.coords.latitude])
         });
 
         const photosEle = [...document.getElementsByClassName("photo-label")];

@@ -4,6 +4,6 @@ const redux = require("redux");
 
 const store = redux.createStore(root_reducer, redux.applyMiddleware(thunk));
 store.subscribe(()=>{
-    console.log(store)
+    console.log(store.getState().auth)
 })
 export default store;

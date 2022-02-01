@@ -10,9 +10,9 @@ export default function useAuth() {
 
   return {
     isAuthenticated: reduxProps.isAuthenticated,
-    tryAutoSignIn:  ()=>{
-        dispatch(authActions.checkAuthentication())
-    },
+    tryAutoSignIn: ()=>{
+      dispatch(authActions.checkAuthentication())
+    }
   };
 }
 

@@ -8,6 +8,7 @@ import './LoginModal.scss';
 import { useDispatch } from 'react-redux';
 import Button from '@restart/ui/esm/Button';
 import { useNavigate } from 'react-router';
+import profileAPI from '../../api/profileAPI';
 
 function LoginModal(props) {
     const dispatch = useDispatch();
@@ -22,12 +23,24 @@ function LoginModal(props) {
         }, 5000)
     }
 
-    const handleResultOAuth = (response, provider) => {
+    const handleResultOAuth =  (response, provider) => {
+        console.log(response)
         if(response.error){
             console.log(response.error)
         }else{
-            dispatch(authActions.OAuthLogin(response, provider, () => {
-                navigate("/profile")
+            dispatch(authActions.OAuthLogin(response, provider, async () => {
+                const user_id = sessionStorage.getItem("user_id")
+                try {
+                    const res = await profileAPI.get(user_id);
+                    if(res.profile != null){
+                        sessionStorage.setItem("profile", JSON.stringify(res.profile));
+                        navigate("/dating")
+                    }else{
+                        navigate("/profile")                    
+                    }
+                } catch (error) {
+                    console.log(error)
+                }   
                 props.handleClose();
             }, (err) => {
                 try{

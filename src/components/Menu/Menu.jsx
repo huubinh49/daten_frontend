@@ -1,7 +1,7 @@
-import React, { memo, useContext, useState } from 'react'
+import React, { memo, useContext, useEffect, useState } from 'react'
 import { Tabs, Tab, Image } from 'react-bootstrap';
 import Matches from '../Matches/Matches';
-import {Message, Avatar} from '../Message/Message';
+import {MessageTab, Avatar} from '../MessageTab/MessageTab';
 import logo from '../../logo.svg';
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import {Link} from 'react-router-dom';
@@ -13,22 +13,22 @@ function Menu(props) {
     const [userProfile, setUserProfile] = useState("")
     useEffect(() => {
       const user_profile = JSON.parse(sessionStorage.getItem("profile"));
-      setUserProfile(()=> user_profile.img_url)
+      setUserProfile(()=> user_profile)
     }, []);
     
     return(
         <aside className="menu">
             <div className="menu-header">
-                <div className = "header-profile">
+                <Link to="/profile" className = "header-profile">
                     <Avatar className="profile-avt" style={{
                         width: "40px",
                         height: "40px",
                         border: "2px solid white"
-                    }} img_url = {userProfile.img_url} />
+                    }} img_url = {userProfile? userProfile.photos[0]: ""} />
 
-                    <h2 className="profile-name">{user_profile.name}</h2>
-                </div>
-                <Link to="/dating/" className = "header-action" style={{
+                    <h2 className="profile-name">{userProfile.fullName}</h2>
+                </Link>
+                <Link to="/dating" className = "header-action" style={{
                     pointerEvents: chatting? "all": "none",
                     visibility: chatting? "visible": "hidden"
                 }} onClick = {() => setChatting(false)}>
@@ -45,13 +45,13 @@ function Menu(props) {
                     onSelect={(k) => setKey(k)}
                 >
                     <Tab eventKey="private" title="Private">
-                        <Message is_private={true}/>
+                        <MessageTab is_private={true}/>
                     </Tab>
                     <Tab eventKey="matches" title="Matches">
                         <Matches />
                     </Tab>
                     <Tab eventKey="message" title="Message">
-                        <Message />
+                        <MessageTab />
                     </Tab>
                 </Tabs>
             </div>

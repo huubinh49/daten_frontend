@@ -1,9 +1,10 @@
 import React, { memo, useContext, useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap';
+import { load } from 'react-cookies';
 import { Link } from 'react-router-dom';
-import useTargetUser from '../../hooks/targetUser';
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
-import "./Message.scss"
+import matchAPI from '../../api/matchAPI';
+import "./MessageTab.scss"
 
 const Avatar = memo((props) => (
     <div className= "card-avatar" style={{
@@ -19,14 +20,14 @@ const Avatar = memo((props) => (
     }} />
 ))
 
-const MessageCard = memo((props) =>{
+const MessageTile = memo((props) =>{
     return(
             <div className="card" style={{
                 display: "flex",
                 flexFlow: "row",
                 padding: "10px 0px"
             }}>
-                <Avatar is_private={props.is_private} img_url={props.img_urls[0]} style={{
+                <Avatar is_private={props.is_private} img_url={props.photos[0]} style={{
                     width:"50px",
                     height:"50px",
                     margin: "0px 20px"
@@ -45,23 +46,19 @@ const MessageCard = memo((props) =>{
             </div>
     )
 })
-const Message = memo((props) => {
+const MessageTab = memo((props) => {
     const [messages, setMessages] = useState([])
     const messageRef = useRef(null);
     const [chatting, setChatting] = useContext(ChattingContext);
     
-    // TODO: Write get list user that already talked together
-    const loadMore = () => {
-        console.log("load more!")
+    const loadMore = async () => {
+        const user_id = sessionStorage.getItem('user_id');
+        const res = await matchAPI.getAllChatted(user_id)
+        const newMessages = res.messages
         setMessages(prevMessages =>(
             [
                 ...prevMessages,
-                ...(new Array(10)).fill({
-                    'user_id': "111",
-                    "name": "Ngao",
-                    "img_urls": ["https://images-ssl.gotinder.com/6006feada0848701004c7e72/172x216_153091d3-e4da-4501-8e22-8913b860dc24.jpg"],
-                    "newest_message": "Anh kiem ra ham"
-                })
+                ...newMessages    
             ]
         ))
     };
@@ -76,15 +73,7 @@ const Message = memo((props) => {
             }
         }
         messageRef.current.addEventListener("scroll",scrollHandler );
-// TODO: Write get list user that already talked together
-        setMessages(
-            new Array(10).fill({
-                'user_id': "111",
-                "name": "Ngao",
-                "img_urls": ["https://images-ssl.gotinder.com/6006feada0848701004c7e72/172x216_153091d3-e4da-4501-8e22-8913b860dc24.jpg"],
-                "newest_message": "Anh kiem ra ham"
-            })
-        )
+        loadMore();
         return () => {
             if(messageRef.current)
             messageRef.current.removeEventListener("scroll",scrollHandler );
@@ -100,7 +89,7 @@ const Message = memo((props) => {
                         <Link to={`/dating/messages/${message.user_id}`} onClick={() => {
                             setChatting(true)
                         }} >
-                            <MessageCard {...message} key ={idx} is_private = {props.is_private}/>
+                            <MessageTile {...message} key ={idx} is_private = {props.is_private}/>
                         </Link>
                     </Col>)}
                 </Row>
@@ -109,4 +98,4 @@ const Message = memo((props) => {
     )
 });
 
-export {Avatar, Message}
+export {Avatar, MessageTab}

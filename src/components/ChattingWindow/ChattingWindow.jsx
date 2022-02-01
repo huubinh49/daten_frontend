@@ -1,34 +1,78 @@
-import React, { memo, useContext, useEffect, useState } from 'react'
+import React, { memo, useContext, useRef, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { ButtonGroup, Card, Col, Container, Row } from 'react-bootstrap'
-import { Avatar } from '../Message/Message'
+import { Avatar } from '../MessageTab/MessageTab'
 import { Link } from 'react-router-dom'
 import "./ChattingWindow.scss";
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import Picker from 'emoji-picker-react';
 import Button from '@restart/ui/esm/Button'
+import profileAPI from '../../api/profileAPI'
+import messageAPI from '../../api/messageAPI'
+import { SocketContext } from '../../socket/socket'
+const Infinite = require('react-infinite');
 
+const LoadingSpinner = (props) => (
+    <div className="infinite-load">
+            Loading...
+    </div>
+)
+const Message = (props) => (
+    <div style = {props.styte} className = {`message ${props.isMine? 'me': ''}`}>
+        {props.content}
+    </div>
+)
 function ChattingWindow(props) {
     const [chatting, setChatting] = useContext(ChattingContext);
     const [typingMessage, setTypingMessage] = useState('')
     const [choosingEmoji, setChoosingEmoji] = useState(false);
     const [currentImg, setCurrentImg] = useState(0);
     const [targetUser, setTargetUser] = useState(null);
-    const { id } = props.match.params
-    useEffect(() => {
-      //TODO: get target user from id 
-    }, []);
+    const currentMessagePage = useRef(0);
+    const [messages, setMessages] = useState([]);
+    const messageBox = useRef(null);
+    const [infiniteLoading, setInfiniteLoading] = useState(false);
+
+    const socket = useContext(SocketContext);
+    const { target_id } = props.match.params
+    const user_id = useRef();
+    useEffect( async () => {
+        const target_user = await profileAPI.get(target_id);
+        user_id.current =  sessionStorage.getItem('user_id');
+        setTargetUser(target_user);
+        socket.emit("addUser", user_id.current);
+        socket.on("getMessage", handleNewMessage);
+        try {
+            setInfiniteLoading(true);
+            // Get initial message
+            const res = await messageAPI.get(target_id, currentMessagePage.current++);
+            console.log(res)
+            setInfiniteLoading(false);
+            // setMessages(res.data);
+        } catch (err) {
+            console.log(err);
+        }
+    }, [socket]);
     
-    // const user = {
-    //     'user_id': "112",
-    //     'name': "Que Tran",
-    //     'age': "21",
-    //     'job': "Student",
-    //     'address': "Thu Duc",
-    //     'distance': "20",
-    //     'img_urls': ["https://images-ssl.gotinder.com/u/6Z1prNTM9cxLfRoQq58UcX/7wwDHqafRhM1e88S1og5yB.jpg?Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6IiovdS82WjFwck5UTTljeExmUm9RcTU4VWNYLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE2NDA4NjcyMDZ9fX1dfQ__&Signature=daVfTFXe-JxboW8137c~dIjZ26yz6YnDpJLKWmhc~TqHTtzrYEMVQxTVQlHs0u5NueXnlpS28hex2r7aJiDqm9NPPERG2Lwwgp4Q5z~qsESkF7bJj4qN5F5j466qv0e9HWmGBH-PriB7ISnaXiSngXwJCcQ84nWXCIq9QkMdtu6N8fKIpjNs4xkcJvSu1HvXGRQPpJzZzNjT4ENEI4FOQzaKba~dBiuybcSIpfPv04AUMfyKvxz6oq~n8trsgSVmW9riR1YUDkchsmsFSkTCLe~nHESg7AeHs7D~BX5MP6I2oiHEqeuhewNU8lYj730-RZtzGB5GbMqHXkYHh73G~A__&Key-Pair-Id=K368TLDEUPA6OI", "https://images-ssl.gotinder.com/u/6Z1prNTM9cxLfRoQq58UcX/7wwDHqafRhM1e88S1og5yB.jpg?Policy=eyJTdGF0ZW1lbnQiOiBbeyJSZXNvdXJjZSI6IiovdS82WjFwck5UTTljeExmUm9RcTU4VWNYLyoiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE2NDA4NjcyMDZ9fX1dfQ__&Signature=daVfTFXe-JxboW8137c~dIjZ26yz6YnDpJLKWmhc~TqHTtzrYEMVQxTVQlHs0u5NueXnlpS28hex2r7aJiDqm9NPPERG2Lwwgp4Q5z~qsESkF7bJj4qN5F5j466qv0e9HWmGBH-PriB7ISnaXiSngXwJCcQ84nWXCIq9QkMdtu6N8fKIpjNs4xkcJvSu1HvXGRQPpJzZzNjT4ENEI4FOQzaKba~dBiuybcSIpfPv04AUMfyKvxz6oq~n8trsgSVmW9riR1YUDkchsmsFSkTCLe~nHESg7AeHs7D~BX5MP6I2oiHEqeuhewNU8lYj730-RZtzGB5GbMqHXkYHh73G~A__&Key-Pair-Id=K368TLDEUPA6OI"],
-    //     'bio': "Lorem ipsum dolor sit amet consectetur adipisicing elit. Facilis sunt, unde quisquam, natus odit vitae perspiciatis laboriosam veniam odio animi amet ratione assumenda eaque porro tenetur repellendus dignissimos! Sint, amet!\nLorem ipsum dolor sit amet consectetur adipisicing elit. Facilis sunt, unde quisquam, natus odit vitae perspiciatis laboriosam veniam odio animi amet ratione assumenda eaque porro tenetur repellendus dignissimos! Sint, amet!"
-    // }
+    const handleNewMessage = (arrivalMessage) => {
+        arrivalMessage && arrivalMessage.senderId == target_id &&
+        setMessages((prev) => [...prev, arrivalMessage]);
+    };
+
+    const infiniteLoadMessage  = () => {
+        setInfiniteLoading(true);
+        messageAPI.get(target_id, currentMessagePage.current++)
+        .then(res => {
+            console.log(res.data)
+            // setMessages(prevMessages => [...prevMessages, res.data])
+            setInfiniteLoading(false);
+        })
+        .catch(err => {
+            console.log(err)
+            setInfiniteLoading(false);
+        })
+    }
+    
     const messageChanging = (event)=>{
         setTypingMessage(()=> event.target.value)
     }
@@ -40,9 +84,25 @@ function ChattingWindow(props) {
         event.preventDefault();
         setChoosingEmoji((oldState)=>!oldState);
     }
-    const handleSubmitButton = (event)=>{
+    const handleSubmitButton = async (event) => {
         event.preventDefault();
-    }
+        const message = {
+          senderId: user_id.current,
+          recipientId: target_id,
+          messageBody: typingMessage
+        };
+    
+        socket.emit("sendMessage", message);
+        try {
+          const res = await messageAPI.create(message);
+          setMessages([...messages, res.data]);
+          setTypingMessage("");
+        } catch (err) {
+          console.log(err);
+        }
+    };
+    
+    
     const handleCardClick = (event)=>{
 
         const rect = event.target.getBoundingClientRect()
@@ -52,6 +112,9 @@ function ChattingWindow(props) {
             setCurrentImg(newIdx);
         }
     }
+    
+
+
     return (
         <Container className="chatting" fluid={true}>
             <Row>
@@ -63,14 +126,32 @@ function ChattingWindow(props) {
                                 height:"50px",
                                 border: "5px solid white"
                             }} />
-                            <h3>You matched with Hannnn on 12/21/2021</h3>
+                            <h3>{`You matched with ${targetUser.fullName} on 12/21/2021`}</h3>
                         </div>
                         <Link className="header-action" to="/dating" onClick={()=> setChatting(false)}>
                             <svg class="Sq(24px) P(4px)" viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" role="presentation"><path class="" d="M14.926 12.56v-1.14l5.282 5.288c1.056.977 1.056 2.441 0 3.499-.813 1.057-2.438 1.057-3.413 0L11.512 15h1.138l-5.363 5.125c-.975 1.058-2.438 1.058-3.495 0-1.056-.813-1.056-2.44 0-3.417l5.201-5.288v1.14L3.873 7.27c-1.137-.976-1.137-2.44 0-3.417a1.973 1.973 0 0 1 3.251 0l5.282 5.207H11.27l5.444-5.207c.975-1.139 2.438-1.139 3.413 0 1.057.814 1.057 2.44 0 3.417l-5.2 5.288z"></path></svg>
                         </Link>
                     </div>
-                    <div className="box-body">
-                        
+                    <div className = 'box-body' ref = {messageBox}>
+                        <Infinite 
+                                elementHeight={50}
+                                displayBottomUpwards 
+                                infiniteLoadBeginEdgeOffset={200}
+                                onInfiniteLoad={infiniteLoadMessage}
+                                loadingSpinnerDelegate={LoadingSpinner}
+                                isInfiniteLoading={infiniteLoading}
+                                onInfiniteLoad={infiniteLoadMessage}
+                                useWindowAsScrollContainer
+                                >
+                            {/* insert messages for subsequent pages at this point */}
+                            {
+                                messages.map(message =>(
+                                    <Message content = {message.messageBody} style={{
+                                        height: '50px'
+                                    }} isMine = {message.senderId == user_id.current}  />
+                                ))
+                            }
+                        </Infinite>
                     </div>
                     <div className="box-footer">
                         <form>
@@ -129,7 +210,7 @@ function ChattingWindow(props) {
                         
                         <Card.Body>
                         <Card.Title>
-                            <span className="name disable-select">{targetUser.name}</span>
+                            <span className="name disable-select">{targetUser.fllName}</span>
                             <span className="age disable-select">{targetUser.age}</span>
                         </Card.Title>
                         <Card.Text className = "disable-select">

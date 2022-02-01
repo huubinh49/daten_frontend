@@ -7,7 +7,9 @@ export const authStart = ()=>{
     }
 }
 export const authSuccess = (token)=>{
+    console.log(decode(token))
     sessionStorage.setItem('user_id', decode(token).id)
+    sessionStorage.setItem('access_token', token)
     return{
         type:actionTypes.AUTH_SUCCESS,
         token: token
@@ -22,37 +24,25 @@ export const authFail = (error)=>{
 
 export const authLogout = ()=>{
     sessionStorage.removeItem('user_id')
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('expiration');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('expiration');
     return {
-        type: actionTypes.AUTH_LOGOUT
+        type: actionTypes.AUTH_LOGOUT,
+        token: null
     };
-}
-
-const isAuthenticated = () =>{
-    const access = localStorage.getItem("access_token") 
-        const refresh = localStorage.getItem("refresh_token")
-        if(!access && !refresh){
-            return false;
-        }else{
-            const exp_refresh = decode(refresh).exp;
-            const exp_access = decode(access).exp;
-            if(exp_refresh*1000 <= new Date().getTime() || exp_access*1000 <= new Date().getTime()){
-                return false;
-            }
-            return true;
-        }
 }
 export const checkAuthentication = ()=>{
     return dispatch =>{
-        const access = localStorage.getItem("access_token") 
-        const refresh = localStorage.getItem("refresh_token")
+        const access = sessionStorage.getItem("access_token") 
+        const refresh = sessionStorage.getItem("refresh_token")
+        console.log("check authenticate: ", access, refresh)
         if(!access && !refresh){
             dispatch(authLogout());
         }else{
             const exp_refresh = decode(refresh).exp;
             if(exp_refresh*1000 <= new Date().getTime()){
+                console.log('refresh token out of date')
                 dispatch(authLogout());
                 return;
             }else{
@@ -85,8 +75,7 @@ export const authSignup = (formData, onSuccess = () => {}, onFailure = (err) => 
             res =>{
                 console.log(res)
                 const token = res;
-                localStorage.setItem('access_token', token.access_token)
-                localStorage.setItem('refresh_token', token.refresh_token)
+                sessionStorage.setItem('refresh_token', token.refresh_token)
                 dispatch(authSuccess(token.access_token))
                 onSuccess();
             }
@@ -113,8 +102,7 @@ export const authLogin = (formData, onSuccess = () => {}, onFailure = (err) => {
         .then(
             res =>{
                 const token = res;
-                localStorage.setItem('access_token', token.access_token)
-                localStorage.setItem('refresh_token', token.refresh_token)
+                sessionStorage.setItem('refresh_token', token.refresh_token)
                 dispatch(authSuccess(token.access_token))
                 onSuccess();
             }
@@ -131,17 +119,17 @@ export const authLogin = (formData, onSuccess = () => {}, onFailure = (err) => {
 export const obtainNewAccessToken = (refresh_token)=>{
     return dispatch =>{
         dispatch(authStart())
-        const formData = new FormData();
-        formData.append('refresh_token', refresh_token);
-        axiosClient.post('/auth/refresh-token',formData,{
+        axiosClient.post('/auth/refresh-token',{
+            'refresh_token': refresh_token
+        },  {
             headers: {
-                "Content-Type": "multipart/form-data",
+              'Content-Type': 'multipart/form-data'
             }
-        })
+          })
         .then(
             res => {
                 const newAccessToken = res.access_token;
-                localStorage.setItem('access_token', newAccessToken)
+                sessionStorage.setItem('access_token', newAccessToken)
                 dispatch(authSuccess(newAccessToken))
             }
         )
@@ -168,9 +156,9 @@ export const OAuthLogin = (response, provider, onSuccess = () => {}, onFailure =
         })
         .then(
             res =>{
+                console.log("received from server: ", res, decode(res.access_token))
                 const token = res;
-                localStorage.setItem('access_token', token.access_token)
-                localStorage.setItem('refresh_token', token.refresh_token)
+                sessionStorage.setItem('refresh_token', token.refresh_token)
                 dispatch(authSuccess(token.access_token))
                 onSuccess();
             }

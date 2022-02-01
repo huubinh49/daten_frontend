@@ -18,10 +18,17 @@
         align-items: center;
         justify-content: space-between;
         padding: 0 20px;
+       
         .header-profile{
             display: flex;
             align-items: center;
             gap: 10px;
+            border-radius: 10px;
+            padding: 4px 8px;
+            &:hover{
+                cursor: pointer;
+                background-color: rgb(39, 39, 39);
+            }
             .profile-name{
                 color: white;
                 font-size: 1rem;

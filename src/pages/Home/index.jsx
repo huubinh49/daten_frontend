@@ -8,6 +8,7 @@ import useAuth from '../../hooks/auth';
 import { useNavigate } from 'react-router';
 import "./HomePage.scss";
 import axiosClient from '../../api/axiosClient';
+import profileAPI from '../../api/profileAPI';
 
 const HomePage = (props) => {
     const navigate = useNavigate();
@@ -20,13 +21,7 @@ const HomePage = (props) => {
         const user_id = sessionStorage.getItem("user_id")
         if (isAuthenticated && user_id) {
             try {
-                const res = await axiosClient.get(
-                    "http://localhost:5000/profile",{
-                      params: {
-                            "user_id": user_id
-                        }
-                    }
-                );
+                const res = await profileAPI.get(user_id);
                 console.log(res)
                 if(res.profile != null){
                     sessionStorage.setItem("profile", JSON.stringify(res.profile));
@@ -43,8 +38,25 @@ const HomePage = (props) => {
         }
     };
    
-    useEffect(() => {
-        tryAutoSignIn()
+    useEffect(async () => {
+        await tryAutoSignIn();
+        const user_id = sessionStorage.getItem("user_id")
+        if (isAuthenticated && user_id) {
+            profileAPI.get(user_id).then(
+                res => {
+                    console.log(res)
+                    if(res.profile != null){
+                        sessionStorage.setItem("profile", JSON.stringify(res.profile));
+                        navigate("/dating")
+                    }else{
+                        navigate("/profile")                    
+                    }
+                }
+            )
+            .catch (error => {
+                console.log(error)
+            })
+        }
     }, [])
     // Variables for control login form
     const [showLoginForm, setLoginFormShow] = useState(false);
@@ -63,7 +75,7 @@ const HomePage = (props) => {
                 <Container fluid>
                     <LoginModal openLoginForm={openLoginForm} show={showLoginModal} fullscreen={fullscreenModal} onHide={closeLoginModal} handleClose={closeLoginModal}/>
                     <LoginForm show={showLoginForm} fullscreen={fullscreenForm} onHide={closeLoginForm} handleClose={closeLoginModal}/>
-                    <Row>
+                    <Row>   
                         <Col className="home_col home_col-center" md={12} lg={6} style={{
                             background: `#ffffff url('${process.env.PUBLIC_URL}/home_bg.png') no-repeat center center`,
                             backgroundSize: 'cover'

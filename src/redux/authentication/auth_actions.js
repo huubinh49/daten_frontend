@@ -8,8 +8,8 @@ export const authStart = ()=>{
 }
 export const authSuccess = (token)=>{
     console.log(decode(token))
-    sessionStorage.setItem('user_id', decode(token).id)
-    sessionStorage.setItem('access_token', token)
+    localStorage.setItem('user_id', decode(token).id)
+    localStorage.setItem('access_token', token)
     return{
         type:actionTypes.AUTH_SUCCESS,
         token: token
@@ -23,10 +23,10 @@ export const authFail = (error)=>{
 }
 
 export const authLogout = ()=>{
-    sessionStorage.removeItem('user_id')
-    sessionStorage.removeItem('access_token');
-    sessionStorage.removeItem('refresh_token');
-    sessionStorage.removeItem('expiration');
+    localStorage.removeItem('user_id')
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('expiration');
     return {
         type: actionTypes.AUTH_LOGOUT,
         token: null
@@ -34,8 +34,8 @@ export const authLogout = ()=>{
 }
 export const checkAuthentication = ()=>{
     return dispatch =>{
-        const access = sessionStorage.getItem("access_token") 
-        const refresh = sessionStorage.getItem("refresh_token")
+        const access = localStorage.getItem("access_token") 
+        const refresh = localStorage.getItem("refresh_token")
         console.log("check authenticate: ", access, refresh)
         if(!access && !refresh){
             dispatch(authLogout());
@@ -75,7 +75,7 @@ export const authSignup = (formData, onSuccess = () => {}, onFailure = (err) => 
             res =>{
                 console.log(res)
                 const token = res;
-                sessionStorage.setItem('refresh_token', token.refresh_token)
+                localStorage.setItem('refresh_token', token.refresh_token)
                 dispatch(authSuccess(token.access_token))
                 onSuccess();
             }
@@ -102,7 +102,7 @@ export const authLogin = (formData, onSuccess = () => {}, onFailure = (err) => {
         .then(
             res =>{
                 const token = res;
-                sessionStorage.setItem('refresh_token', token.refresh_token)
+                localStorage.setItem('refresh_token', token.refresh_token)
                 dispatch(authSuccess(token.access_token))
                 onSuccess();
             }
@@ -129,7 +129,7 @@ export const obtainNewAccessToken = (refresh_token)=>{
         .then(
             res => {
                 const newAccessToken = res.access_token;
-                sessionStorage.setItem('access_token', newAccessToken)
+                localStorage.setItem('access_token', newAccessToken)
                 dispatch(authSuccess(newAccessToken))
             }
         )
@@ -158,7 +158,7 @@ export const OAuthLogin = (response, provider, onSuccess = () => {}, onFailure =
             res =>{
                 console.log("received from server: ", res, decode(res.access_token))
                 const token = res;
-                sessionStorage.setItem('refresh_token', token.refresh_token)
+                localStorage.setItem('refresh_token', token.refresh_token)
                 dispatch(authSuccess(token.access_token))
                 onSuccess();
             }

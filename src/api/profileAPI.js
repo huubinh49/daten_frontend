@@ -13,6 +13,9 @@ class ProfileAPI{
     create = (formData) =>{
         return axiosClient.post(this.url, formData)
     }
+    update = (formData) => {
+        return axiosClient.post(this.url+'update', formData)
+    }
 }
 const profileAPI = new ProfileAPI()
 export default profileAPI;

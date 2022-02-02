@@ -3,7 +3,7 @@ import Footer from '../../components/Footer/Footer'
 import Header from '../../components/Header/Header'
 import ProfileForm from '../../components/ProfileForm/ProfileForm'
 
-function Profile() {
+function ProfilePage() {
     return (
         <>
             <Header />
@@ -15,4 +15,4 @@ function Profile() {
     )
 }
 
-export default Profile
+export default ProfilePage

@@ -37,7 +37,7 @@ function Matches(props) {
     const [profiles, setProfiles] = useState([])
     // get more user already matched
     const loadMore = async ()  => {
-        const user_id = sessionStorage.getItem('user_id');
+        const user_id = localStorage.getItem('user_id');
         const res = await matchAPI.getAll(user_id)
         console.log('Matches query data: ', res)
         const newProfiles = res.matches

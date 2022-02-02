@@ -67,10 +67,10 @@ function ProfileForm() {
             formData.append("position", currentPosition);
             try {
                 const res = await profileAPI.create(formData);
-               if(res.error){
+               if(res.error || !res.profile){
                    handleShowAlert(res.error)
                }else{
-                    sessionStorage.setItem("profile", JSON.stringify(res.profile));
+                    localStorage.setItem("profile", JSON.stringify(res.profile));
                     navigate("/dating")
                }
             } catch (ex) {
@@ -132,7 +132,7 @@ function ProfileForm() {
                         <Row>
                             <Col md={6} sm={12}>
                                 <Form.Group className="mb-3" controlId="name"
-                                    value={formikProps.values.email}
+                                    value={formikProps.values.name}
                                     onChange={formikProps.handleChange}
                                     onBlur={formikProps.handleBlur}
                                 >

@@ -7,6 +7,8 @@ import { Routes, Route } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import { ChattingContext } from './DatingContext';
 import useAuth from '../../hooks/auth';
+import Profile from '../../components/Profile/Profile';
+import ProfileEdit from '../../components/ProfileEdit/ProfileEdit';
 
 export default function DatingApp(props) {
     const [chatting, setChatting] = useState(false);
@@ -37,7 +39,16 @@ export default function DatingApp(props) {
                                         <ChattingWindow />
                                     </React.Suspense>
                                 } path="/messages/:user_id" key="/messages/:id" />;
-                            
+                            <Route element = {
+                                <React.Suspense fallback = {"loading..."}>
+                                    <Profile />
+                                </React.Suspense>
+                            } path="/profile" key="/profile" />;
+                            <Route exact ={true} element = {
+                                <React.Suspense fallback = {"loading..."}>
+                                    <ProfileEdit />
+                                </React.Suspense>
+                            } path="/profile/edit" key="/profile/edit" />;
                             <Route exact ={true} element = {
                                     <React.Suspense fallback = {"loading..."}>
                                         <ProfileDeck />

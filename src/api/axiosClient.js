@@ -12,7 +12,7 @@ const axiosClient = axios.create({
 });
 
 axiosClient.interceptors.request.use(function(config){
-    const access_token = sessionStorage.getItem('access_token', "");
+    const access_token = localStorage.getItem('access_token', "");
     if(access_token){
         config.headers['Authorization'] = `JWT ${access_token}`;
     }

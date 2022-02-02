@@ -29,11 +29,11 @@ function LoginModal(props) {
             console.log(response.error)
         }else{
             dispatch(authActions.OAuthLogin(response, provider, async () => {
-                const user_id = sessionStorage.getItem("user_id")
+                const user_id = localStorage.getItem("user_id")
                 try {
                     const res = await profileAPI.get(user_id);
                     if(res.profile != null){
-                        sessionStorage.setItem("profile", JSON.stringify(res.profile));
+                        localStorage.setItem("profile", JSON.stringify(res.profile));
                         navigate("/dating")
                     }else{
                         navigate("/profile")                    

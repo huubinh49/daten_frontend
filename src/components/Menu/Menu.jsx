@@ -12,14 +12,14 @@ function Menu(props) {
     const [chatting, setChatting] = useContext(ChattingContext);
     const [userProfile, setUserProfile] = useState("")
     useEffect(() => {
-      const user_profile = JSON.parse(sessionStorage.getItem("profile"));
+      const user_profile = JSON.parse(localStorage.getItem("profile"));
       setUserProfile(()=> user_profile)
     }, []);
     
     return(
         <aside className="menu">
             <div className="menu-header">
-                <Link to="/profile" className = "header-profile">
+                <Link to="/dating/profile" className = "header-profile">
                     <Avatar className="profile-avt" style={{
                         width: "40px",
                         height: "40px",

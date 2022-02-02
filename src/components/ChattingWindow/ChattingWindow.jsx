@@ -38,7 +38,7 @@ function ChattingWindow(props) {
     const user_id = useRef();
     useEffect( async () => {
         const target_user = await profileAPI.get(target_id);
-        user_id.current =  sessionStorage.getItem('user_id');
+        user_id.current =  localStorage.getItem('user_id');
         setTargetUser(target_user);
         socket.emit("addUser", user_id.current);
         socket.on("getMessage", handleNewMessage);
@@ -210,7 +210,7 @@ function ChattingWindow(props) {
                         
                         <Card.Body>
                         <Card.Title>
-                            <span className="name disable-select">{targetUser.fllName}</span>
+                            <span className="name disable-select">{targetUser.fullName}</span>
                             <span className="age disable-select">{targetUser.age}</span>
                         </Card.Title>
                         <Card.Text className = "disable-select">

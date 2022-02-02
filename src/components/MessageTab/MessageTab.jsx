@@ -3,6 +3,7 @@ import { Col, Container, Row } from 'react-bootstrap';
 import { load } from 'react-cookies';
 import { Link } from 'react-router-dom';
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
+import { SocketContext } from '../../socket/socket'
 import matchAPI from '../../api/matchAPI';
 import "./MessageTab.scss"
 
@@ -50,9 +51,10 @@ const MessageTab = memo((props) => {
     const [messages, setMessages] = useState([])
     const messageRef = useRef(null);
     const [chatting, setChatting] = useContext(ChattingContext);
+    const socket = useContext(SocketContext)
     
     const loadMore = async () => {
-        const user_id = sessionStorage.getItem('user_id');
+        const user_id = localStorage.getItem('user_id');
         const res = await matchAPI.getAllChatted(user_id)
         const newMessages = res.messages
         setMessages(prevMessages =>(
@@ -74,11 +76,21 @@ const MessageTab = memo((props) => {
         }
         messageRef.current.addEventListener("scroll",scrollHandler );
         loadMore();
+        socket.on("newMessage", handleNewMessage)
         return () => {
             if(messageRef.current)
             messageRef.current.removeEventListener("scroll",scrollHandler );
+
+            socket.off("newMessage", handleNewMessage)
         }
-    }, [])
+        
+    }, [socket])
+    const handleNewMessage = (newMessage) => {
+        setMessages((prevMessages) => [
+            ...prevMessages,
+            
+        ])
+    }
     return(
         <div className="message" ref={messageRef} style={{
             overflowY: "scroll"

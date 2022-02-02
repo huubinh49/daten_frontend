@@ -1,0 +1,118 @@
+.disable-select {
+    -ms-user-select:none;
+   -moz-user-select:none;
+   -webkit-user-select:none;
+   -webkit-touch-callout: none;
+   -khtml-user-select: none;
+    user-select:none;
+  }
+.profile-window{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.card{
+    width: 400px;
+    height: 560px;
+    box-shadow: 5px 10px 18px #888888;
+    border-radius: 10px;
+    flex-flow: column;
+    // align-items: flex-end;
+    path{
+        fill: rgb(0, 0, 0);
+    }
+    .card-top{
+        width: 100%;
+        height: 80%;
+        position: relative;
+        cursor: pointer;
+        &:hover{
+            .card-indicator{
+                opacity: 1;
+            }    
+        }
+
+        .card-indicator{
+            position:absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9;
+            width: 100%;
+            height: 20px;
+            display: flex;
+            flex-flow: row;
+            align-items: center;
+            justify-content: space-between;
+            opacity: 0;
+            padding: 0 10px;
+            .indicator{
+                
+       
+                &-right{
+                    transform: rotateZ(180deg);
+                }
+                width: 24px;
+                height: 24px;
+            }
+        }
+    }
+    
+    .card-body{
+        width: 100%;
+        height: min-content;
+        color: rgb(0, 0, 0);
+        display: flex;
+        flex-flow: column;
+        justify-content: flex-end;
+        border-radius: inherit;
+        cursor: default;
+        .card-title{
+            font-weight: bold;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            .name{
+                font-size: 1.6rem;
+                letter-spacing: 0.05rem;
+            }
+            .age{
+                font-weight: normal;
+                font-size: 1.4rem;
+                vertical-align: baseline;
+            }
+        }
+        .card-text{
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+            svg{
+                width: 20px;
+                height: 20px;
+            }
+        }
+        .card-footer{
+            cursor: default;
+            height: max-content;
+            display: flex;
+            justify-content: center;
+            background-color: transparent;
+            .btn{
+                cursor: pointer;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-decoration: none;
+                width: 156px;
+                height: 42px;
+                color: white;
+                background-color: rgb(255, 71, 71);
+                font-size: 1.1em;
+            }
+        }
+    }
+  
+}

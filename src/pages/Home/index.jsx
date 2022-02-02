@@ -17,21 +17,23 @@ const HomePage = (props) => {
     const [fullscreenModal, setFullscreenModal] = useState(true);
     const {isAuthenticated, tryAutoSignIn} = useAuth();
     const closeLoginModal = () => setLoginModalShow(false);
+    const checkAlreadyHaveProfile = async (user_id) => {
+        try {
+            const res = await profileAPI.get(user_id);
+            if(res.profile != null){
+                localStorage.setItem("profile", JSON.stringify(res.profile));
+                navigate("/dating")
+            }else{
+                navigate("/create-profile")                    
+            }
+        } catch (error) {
+            console.log(error)
+        }   
+    }
     const openLoginModal = async () => {
-        const user_id = sessionStorage.getItem("user_id")
+        const user_id = localStorage.getItem("user_id")
         if (isAuthenticated && user_id) {
-            try {
-                const res = await profileAPI.get(user_id);
-                console.log(res)
-                if(res.profile != null){
-                    sessionStorage.setItem("profile", JSON.stringify(res.profile));
-                    navigate("/dating")
-                }else{
-                    navigate("/profile")                    
-                }
-            } catch (error) {
-                console.log(error)
-            }   
+            checkAlreadyHaveProfile(user_id)
         }else{
             setFullscreenModal("md-down")    
             setLoginModalShow(true)   
@@ -40,23 +42,8 @@ const HomePage = (props) => {
    
     useEffect(async () => {
         await tryAutoSignIn();
-        const user_id = sessionStorage.getItem("user_id")
-        if (isAuthenticated && user_id) {
-            profileAPI.get(user_id).then(
-                res => {
-                    console.log(res)
-                    if(res.profile != null){
-                        sessionStorage.setItem("profile", JSON.stringify(res.profile));
-                        navigate("/dating")
-                    }else{
-                        navigate("/profile")                    
-                    }
-                }
-            )
-            .catch (error => {
-                console.log(error)
-            })
-        }
+        const user_id = localStorage.getItem("user_id")
+        checkAlreadyHaveProfile(user_id)
     }, [])
     // Variables for control login form
     const [showLoginForm, setLoginFormShow] = useState(false);

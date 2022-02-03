@@ -12,7 +12,9 @@ class EvaluateAPI{
         })
     }
     vote = (target_id, is_liked) =>{
-        return axiosClient.post(`${this.url}`)
+        return axiosClient.post(`${this.url}`, {
+            target_id, is_liked
+        })
     }
 }
 const evaluateAPI = new EvaluateAPI()

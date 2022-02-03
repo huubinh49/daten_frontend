@@ -7,6 +7,7 @@ import * as yup from "yup";
 import Button from '@restart/ui/esm/Button';
 import { useNavigate } from 'react-router';
 import profileAPI from '../../api/profileAPI';
+import useProfile from '../../hooks/profile';
 
 const dobLowerBound = new Date();
 dobLowerBound.setFullYear(dobLowerBound.getFullYear() - 16);
@@ -32,6 +33,7 @@ function ProfileForm() {
     const [message, setMessage] = useState('')
     const [showAlert, setShowAlert] = useState(false);
     const [currentPosition, setCurrentPosition] = useState([0, 0])
+    const [profile, setProfile] = useProfile();
     const navigate = useNavigate();
 
     const handleShowAlert = (errorMessage) => {
@@ -70,7 +72,8 @@ function ProfileForm() {
                if(res.error || !res.profile){
                    handleShowAlert(res.error)
                }else{
-                    localStorage.setItem("profile", JSON.stringify(res.profile));
+                    
+                    setProfile(res.profile)
                     navigate("/dating")
                }
             } catch (ex) {

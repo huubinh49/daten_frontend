@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './DatingApp.scss';
 import ProfileDeck from '../../components/ProfileDeck/ProfileDeck';
 import Menu from '../../components/Menu/Menu';
@@ -12,6 +12,7 @@ import ProfileEdit from '../../components/ProfileEdit/ProfileEdit';
 
 export default function DatingApp(props) {
     const [chatting, setChatting] = useState(false);
+    const [viewingProfile, setViewingProfile] = useState(false);
     const navigate = useNavigate()
     
     const {
@@ -30,9 +31,8 @@ export default function DatingApp(props) {
     return(
         <div className="app">
             <ChattingContext.Provider value={[chatting, setChatting]}>
-                <Menu />
+                <Menu viewingProfile = {viewingProfile} setViewingProfile = {setViewingProfile} />
                 <section className="deck">
-                    
                         <Routes>
                             <Route element = {
                                     <React.Suspense fallback = {"loading..."}>

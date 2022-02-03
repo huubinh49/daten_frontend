@@ -38,24 +38,25 @@ function ChattingWindow(props) {
     const user_id = useRef();
     useEffect( async () => {
         const target_user = await profileAPI.get(target_id);
-        user_id.current =  localStorage.getItem('user_id');
+        user_id.current =  sessionStorage.getItem('user_id');
         setTargetUser(target_user);
         socket.emit("addUser", user_id.current);
-        socket.on("getMessage", handleNewMessage);
+        socket.on("newMessage", handleNewMessage);
         try {
             setInfiniteLoading(true);
             // Get initial message
             const res = await messageAPI.get(target_id, currentMessagePage.current++);
             console.log(res)
-            setInfiniteLoading(false);
             // setMessages(res.data);
+            setInfiniteLoading(false);
         } catch (err) {
             console.log(err);
         }
     }, [socket]);
     
     const handleNewMessage = (arrivalMessage) => {
-        arrivalMessage && arrivalMessage.senderId == target_id &&
+        const ids = [user_id.current, target_id]
+        if(arrivalMessage && ids.indexOf(arrivalMessage.senderId) !== -1 && ids.indexOf(arrivalMessage.recipientId) !== -1)
         setMessages((prev) => [...prev, arrivalMessage]);
     };
 
@@ -63,7 +64,7 @@ function ChattingWindow(props) {
         setInfiniteLoading(true);
         messageAPI.get(target_id, currentMessagePage.current++)
         .then(res => {
-            console.log(res.data)
+            console.log(res)
             // setMessages(prevMessages => [...prevMessages, res.data])
             setInfiniteLoading(false);
         })
@@ -215,7 +216,7 @@ function ChattingWindow(props) {
                         </Card.Title>
                         <Card.Text className = "disable-select">
                             <svg className="Va(m) Sq(16px)" viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" role="presentation"><g transform="translate(2 5)" stroke="#fff" strokeWidth=".936" fill="none" fillRule="evenodd"><rect x="5.006" y="3.489" width="9.988" height="9.637" rx=".936"></rect><path d="M7.15 3.434h5.7V1.452a.728.728 0 0 0-.724-.732H7.874a.737.737 0 0 0-.725.732v1.982z"></path><rect x=".72" y="3.489" width="18.56" height="9.637" rx=".936"></rect></g></svg>
-                            <span className = "disable-select">{targetUser.job}</span>
+                            <span className = "disable-select">{targetUser.work}</span>
                         </Card.Text>
                         <Card.Text className = "disable-select">
                             <svg className="Va(m) Sq(16px)" viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" role="presentation"><g stroke="#fff" strokeWidth=".936" fill="none" fillRule="evenodd"><path d="M19.695 9.518H4.427V21.15h15.268V9.52zM3.109 9.482h17.933L12.06 3.709 3.11 9.482z"></path><path d="M9.518 21.15h5.086v-6.632H9.518z"></path></g></svg>

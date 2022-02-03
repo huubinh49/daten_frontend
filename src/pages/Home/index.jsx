@@ -7,21 +7,22 @@ import LoginModal from '../../components/LoginModal/LoginModal';
 import useAuth from '../../hooks/auth';
 import { useNavigate } from 'react-router';
 import "./HomePage.scss";
-import axiosClient from '../../api/axiosClient';
 import profileAPI from '../../api/profileAPI';
-
+import useProfile from '../../hooks/profile';
 const HomePage = (props) => {
     const navigate = useNavigate();
     // Variables for control login modal
     const [showLoginModal, setLoginModalShow] = useState(false);
     const [fullscreenModal, setFullscreenModal] = useState(true);
     const {isAuthenticated, tryAutoSignIn} = useAuth();
+    const [profile, setProfile] = useProfile();
     const closeLoginModal = () => setLoginModalShow(false);
     const checkAlreadyHaveProfile = async (user_id) => {
         try {
             const res = await profileAPI.get(user_id);
+            console.log('check already have profile: ', res)
             if(res.profile != null){
-                localStorage.setItem("profile", JSON.stringify(res.profile));
+                setProfile(res.profile)
                 navigate("/dating")
             }else{
                 navigate("/create-profile")                    
@@ -32,7 +33,8 @@ const HomePage = (props) => {
     }
     const openLoginModal = async () => {
         const user_id = localStorage.getItem("user_id")
-        if (isAuthenticated && user_id) {
+        console.log(isAuthenticated, user_id)
+        if (isAuthenticated && user_id !== 'undefined') {
             checkAlreadyHaveProfile(user_id)
         }else{
             setFullscreenModal("md-down")    
@@ -43,7 +45,9 @@ const HomePage = (props) => {
     useEffect(async () => {
         await tryAutoSignIn();
         const user_id = localStorage.getItem("user_id")
-        checkAlreadyHaveProfile(user_id)
+        if (isAuthenticated && user_id !== 'undefined') {
+            checkAlreadyHaveProfile(user_id)
+        }
     }, [])
     // Variables for control login form
     const [showLoginForm, setLoginFormShow] = useState(false);

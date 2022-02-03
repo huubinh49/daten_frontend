@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useState } from 'react'
+import { Col, Container, Row } from 'react-bootstrap';
 import evaluateAPI from '../../api/evaluateAPI';
-import profileAPI from '../../api/profileAPI';
 import ProfileCard from '../ProfileCard/ProfileCard'
 import "./ProfileDeck.scss";
 const ProfileDeck = (props) => {
@@ -27,13 +27,23 @@ const ProfileDeck = (props) => {
     }
 
     return(
-        <div className="card-deck">
-            {
-            profiles.map(
-                        (profile, idx) => <ProfileCard profile = {profile} key={idx} removeProfile = {removeProfile}/>
-                )
-            }
-        </div>
+        <Container style ={{
+            height: "100%",
+            width: "100%"
+        }}>
+            <Row className="card-deck">
+                <Col lg={4} md = {12} style = {{
+                    position: "relative",
+                    height: "100%"
+                }}>
+                    {
+                    profiles.map(
+                                (profile, idx) => <ProfileCard profile = {profile} key={idx} removeProfile = {removeProfile}/>
+                        )
+                    }    
+                </Col>
+            </Row>
+        </Container>
         
     )
 }

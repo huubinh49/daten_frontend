@@ -12,7 +12,7 @@ const MatchCard = memo((props) => {
             width: "100%",
             height: "140px",
             borderRadius: "5px",
-            backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(0, 0, 0, 0.3), transparent, transparent), url('${props.img_urls[0]}')`,
+            backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(0, 0, 0, 0.3), transparent, transparent), url('${props.photos[0]}')`,
             backgroundPosition: '50% 0%',
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
@@ -24,7 +24,7 @@ const MatchCard = memo((props) => {
                 fontSize: "1em",
                 fontWeight: "bold",
                 color: "white"
-            }}>{props.name}</span>
+            }}>{props.fullName}</span>
         </div>
         
     )
@@ -41,6 +41,7 @@ function Matches(props) {
         const res = await matchAPI.getAll(user_id)
         console.log('Matches query data: ', res)
         const newProfiles = res.matches
+        console.log("matched profiles:", newProfiles)
         setProfiles(prevProfiles =>(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
             [
                 ...prevProfiles,
@@ -48,7 +49,8 @@ function Matches(props) {
             ]
         ))
     };
-    const handleNewMatcher = (matcher) => {
+    const handleNewMatch = (matcher) => {
+        console.log("new matcher: ", matcher)
         setProfiles(prevProfiles =>(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
             [
                 matcher,
@@ -68,12 +70,12 @@ function Matches(props) {
         matchRef.current.addEventListener("scroll",scrollHandler );
         loadMore();
         
-        socket.on("newMatcher", handleNewMatcher);
+        socket.on("newMatch", handleNewMatch);
         return () => {
             if(matchRef.current)
             matchRef.current.removeEventListener("scroll", scrollHandler)
 
-            socket.off("newMatcher", handleNewMatcher);
+            socket.off("newMatch", handleNewMatch);
         }
        
     }, [])
@@ -86,7 +88,7 @@ function Matches(props) {
                     {profiles && profiles.map((profile, idx) => <Col style={{
                         padding: "8px"
                     }} md={6} lg={4}>
-                        <Link to={`/dating/messages/${props.user_id}`} onClick={() => setChatting(true)} >
+                        <Link to={`/dating/messages/${profile.userId}`} onClick={() => setChatting(true)} >
                             <MatchCard {...profile} />
                         </Link>
                     </Col>)}

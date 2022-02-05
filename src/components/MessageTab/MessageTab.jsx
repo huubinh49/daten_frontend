@@ -1,4 +1,4 @@
-import React, { memo, useContext, useEffect, useRef, useState } from 'react'
+import React, { memo, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap';
 import { load } from 'react-cookies';
 import { Link } from 'react-router-dom';
@@ -41,8 +41,8 @@ const MessageTile = memo((props) =>{
                     justifyContent: "center"
 
                 }}>
-                    <span className="card-name" style={{fontSize: "1em"}}>{props.name}</span>
-                    <span className="card-message" style={{fontSize: "0.8em", color: "gray"}}>{props.newest_message}</span>
+                    <span className="card-name" style={{fontSize: "1em"}}>{props.fullName}</span>
+                    <span className="card-message" style={{fontSize: "0.8em", color: "gray"}}>{props.newestMessage}</span>
                 </div>
             </div>
     )
@@ -53,17 +53,24 @@ const MessageTab = memo((props) => {
     const [chatting, setChatting] = useContext(ChattingContext);
     const socket = useContext(SocketContext)
     
-    const loadMore = async () => {
-        const user_id = localStorage.getItem('user_id');
-        const res = await matchAPI.getAllChatted(user_id)
-        const newMessages = res.messages
-        setMessages(prevMessages =>(
-            [
-                ...prevMessages,
-                ...newMessages    
-            ]
-        ))
-    };
+    const loadMore = useCallback(async () => {
+            const user_id = localStorage.getItem('user_id');
+            try{
+                const res = await matchAPI.getAllChatted(user_id)
+                const newMessages = res.messages
+                console.log("Get already chatted partners: ", res)
+                setMessages(prevMessages =>(
+                    [
+                        ...prevMessages,
+                        ...newMessages    
+                    ]
+                ))
+            }catch(error){
+                console.log(error)
+            }
+            
+    }, []);
+   
 
     useEffect(() => {
         const margin = 1; 
@@ -74,8 +81,10 @@ const MessageTab = memo((props) => {
               loadMore();
             }
         }
-        messageRef.current.addEventListener("scroll",scrollHandler );
+        messageRef.current.addEventListener("scroll", scrollHandler);
         loadMore();
+        // TODO: Not received new message notification
+        if(socket)
         socket.on("newMessage", handleNewMessage)
         return () => {
             if(messageRef.current)
@@ -88,8 +97,8 @@ const MessageTab = memo((props) => {
     const handleNewMessage = (newMessage) => {
         setMessages((prevMessages) => [
             ...prevMessages,
-            
-        ])
+            newMessage
+        ])  
     }
     return(
         <div className="message" ref={messageRef} style={{

@@ -1,6 +1,22 @@
 .chatting{
     height: 100vh;
     $headerActionWidth: 36px;
+    .infinite-load{
+        height: 30px;
+        width: 100%;
+        transition-duration: 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &.notShow{
+            height: 0px;
+            overflow: hidden;
+        }
+        p{
+            text-align: center;
+            margin: 0;
+        }
+    }
     .box{
         padding: 0px;
         min-height: 100vh;
@@ -50,6 +66,48 @@
                 transition: 0.5s;
                 &:hover{
                     transform: rotateZ(90deg);
+                }
+            }
+        }
+        &-body{
+            padding-top: 20px;
+            height: calc(100vh - 40px - 100px);
+            overflow-y: scroll;
+            display: flex;
+            flex-flow: column;
+            gap: 10px;
+            .message{
+                width: fit-content;
+                height: fit-content;
+                max-width: 45%;
+
+                /* These are technically the same, but use both */
+                overflow-wrap: break-word;
+                word-wrap: break-word;
+
+                -ms-word-break: break-word;
+                word-break: break-word;
+
+                /* Adds a hyphen where the word breaks, if supported (No Blink) */
+                -ms-hyphens: auto;
+                -moz-hyphens: auto;
+                -webkit-hyphens: auto;
+                hyphens: auto;
+
+                border-radius: 10px;
+                border-top-left-radius: 5px;
+                padding: 5px 10px;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background-color: rgb(20, 20, 20);
+                color: white;
+                &.me{
+                    align-self: flex-end;
+                    border-top-left-radius: 10px;
+                    border-top-right-radius: 5px;
+                    background-color: rgb(238, 99, 99);
                 }
             }
         }
@@ -123,7 +181,9 @@
             }
         }
     }
-
+    .profile-col{
+        padding: 0;
+    }
 
 .card{
     border-radius: inherit;

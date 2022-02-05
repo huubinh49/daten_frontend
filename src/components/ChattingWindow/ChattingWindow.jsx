@@ -1,8 +1,8 @@
-import React, { memo, useContext, useRef, useEffect, useState } from 'react'
+import React, { memo, useContext, useRef, useEffect, useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { ButtonGroup, Card, Col, Container, Row } from 'react-bootstrap'
 import { Avatar } from '../MessageTab/MessageTab'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import "./ChattingWindow.scss";
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import Picker from 'emoji-picker-react';
@@ -10,109 +10,147 @@ import Button from '@restart/ui/esm/Button'
 import profileAPI from '../../api/profileAPI'
 import messageAPI from '../../api/messageAPI'
 import { SocketContext } from '../../socket/socket'
-const Infinite = require('react-infinite');
 
 const LoadingSpinner = (props) => (
-    <div className="infinite-load">
-            Loading...
+    <div className={`infinite-load ${props.isShow? '': 'notShow'}`}>
+            <p>Loading...</p>
     </div>
 )
 const Message = (props) => (
-    <div style = {props.styte} className = {`message ${props.isMine? 'me': ''}`}>
+    <div style = {props.style} className = {`message ${props.isMine? 'me': ''}`}>
         {props.content}
     </div>
 )
+const currentYear = new Date().getFullYear()
 function ChattingWindow(props) {
     const [chatting, setChatting] = useContext(ChattingContext);
     const [typingMessage, setTypingMessage] = useState('')
     const [choosingEmoji, setChoosingEmoji] = useState(false);
     const [currentImg, setCurrentImg] = useState(0);
-    const [targetUser, setTargetUser] = useState(null);
+    const [targetUser, setTargetUser] = useState({});
     const currentMessagePage = useRef(0);
     const [messages, setMessages] = useState([]);
     const messageBox = useRef(null);
     const [infiniteLoading, setInfiniteLoading] = useState(false);
-
+    const [firstLoad, setFirstLoad] = useState(true);
     const socket = useContext(SocketContext);
-    const { target_id } = props.match.params
+    const { target_id } = useParams();
     const user_id = useRef();
-    useEffect( async () => {
+    const initialize = useCallback(async () => {
+        console.log("socket: ", socket)
         const target_user = await profileAPI.get(target_id);
-        user_id.current =  sessionStorage.getItem('user_id');
-        setTargetUser(target_user);
-        socket.emit("addUser", user_id.current);
-        socket.on("newMessage", handleNewMessage);
-        try {
-            setInfiniteLoading(true);
-            // Get initial message
-            const res = await messageAPI.get(target_id, currentMessagePage.current++);
-            console.log(res)
-            // setMessages(res.data);
-            setInfiniteLoading(false);
-        } catch (err) {
-            console.log(err);
+        console.log("Chatting with: ", target_id,  target_user)
+        user_id.current =  localStorage.getItem('user_id');
+        setTargetUser(() => target_user.profile);
+        if(socket.connected){
+            socket.emit("addUser", user_id.current);
+            socket.on("newMessage", handleNewMessage);
         }
-    }, [socket]);
+        
+        const margin = 1; 
+        const scrollHandler = (event) => {
+            // if (messageBox.current.scrollTop + messageBox.current.clientHeight + margin  >= messageBox.current.scrollHeight) {
+            //     // infiniteLoadMessage();
+                
+            // }
+            if(messageBox.current.scrollTop === 0){
+                infiniteLoadMessage();
+            }
+        }
+        messageBox.current.addEventListener("scroll",scrollHandler );
+        infiniteLoadMessage();
+    }, [])
+    // TODO: fix it scroll to bottom every infinite load
+    const scrollToBottom = useCallback(()=>{
+        const domNode = messageBox.current;
+        if (domNode && firstLoad == true) {
+           domNode.scrollTop = domNode.scrollHeight;
+           console.log("scroll to bottom ---------------------")
+           setFirstLoad(false);
+        }
+    }, []);
     
-    const handleNewMessage = (arrivalMessage) => {
+    useEffect(()=> {
+        initialize();
+        return () => {
+            socket.off("newMessage", handleNewMessage);
+        }
+    }, [target_id]);
+    
+    const handleNewMessage = useCallback((arrivalMessage) => {
         const ids = [user_id.current, target_id]
         if(arrivalMessage && ids.indexOf(arrivalMessage.senderId) !== -1 && ids.indexOf(arrivalMessage.recipientId) !== -1)
         setMessages((prev) => [...prev, arrivalMessage]);
-    };
+    }, []);
 
-    const infiniteLoadMessage  = () => {
+    const infiniteLoadMessage  = useCallback(() => {
         setInfiniteLoading(true);
-        messageAPI.get(target_id, currentMessagePage.current++)
+        console.log("Infinite loading!")
+        messageAPI.get(target_id, currentMessagePage.current)
         .then(res => {
-            console.log(res)
-            // setMessages(prevMessages => [...prevMessages, res.data])
-            setInfiniteLoading(false);
+            console.log("Message: ", res)
+            if(res.messages && res.messages.length >= messageAPI.per_page){
+                if(currentMessagePage.current == 0){
+                    setTimeout(()=>{
+                        scrollToBottom()
+                    }, 500);
+                }
+                currentMessagePage.current += 1;
+                setMessages(prevMessages => [...prevMessages, ...res.messages])    
+            }
+            setTimeout(()=>{
+                setInfiniteLoading(false)
+            }, 500);
         })
         .catch(err => {
             console.log(err)
-            setInfiniteLoading(false);
+            setTimeout(()=>{
+                setInfiniteLoading(false)
+            }, 500);
         })
-    }
+    }, [])
     
-    const messageChanging = (event)=>{
+    const messageChanging = useCallback((event)=>{
         setTypingMessage(()=> event.target.value)
-    }
-    const onEmojiClick = (event, emojiObject) => {
+    }, [])
+    const onEmojiClick = useCallback((event, emojiObject) => {
         setTypingMessage((oldMessage)=> oldMessage+ emojiObject.emoji);
-      };
-    
-    const handleEmojiButton = (event) =>{
+    }, [])
+
+    const handleEmojiButton = useCallback((event) =>{
         event.preventDefault();
         setChoosingEmoji((oldState)=>!oldState);
-    }
-    const handleSubmitButton = async (event) => {
+    }, [])
+    const handleSubmitButton = useCallback(async (event) => {
         event.preventDefault();
         const message = {
           senderId: user_id.current,
           recipientId: target_id,
           messageBody: typingMessage
         };
-    
-        socket.emit("sendMessage", message);
         try {
           const res = await messageAPI.create(message);
-          setMessages([...messages, res.data]);
+          setMessages([...messages, res]);
           setTypingMessage("");
         } catch (err) {
           console.log(err);
         }
-    };
+    }, []);
     
     
-    const handleCardClick = (event)=>{
+    const handleCardClick = useCallback((event)=>{
 
         const rect = event.target.getBoundingClientRect()
         const direction = (event.clientX- rect.left - rect.width/2) > 0 ? 1 : -1;
         const newIdx = currentImg  + direction;
-        if(newIdx >= 0 && newIdx < targetUser.img_urls.length){
+        if(newIdx >= 0 && newIdx < targetUser.photos?.length){
             setCurrentImg(newIdx);
         }
-    }
+    }, [])
+    
+    useEffect(() => {
+      console.log("Messages: ", messages)
+    }, [messages]);
     
 
 
@@ -122,7 +160,7 @@ function ChattingWindow(props) {
                 <Col className="box" sm = {12} md = {12} lg ={7}>
                     <div className="box-header">
                         <div className="header-info">
-                            <Avatar {...props} style={{
+                            <Avatar is_private = {false} img_url = {targetUser.photos? targetUser.photos[0]: ""} style={{
                                 width:"50px",
                                 height:"50px",
                                 border: "5px solid white"
@@ -134,25 +172,12 @@ function ChattingWindow(props) {
                         </Link>
                     </div>
                     <div className = 'box-body' ref = {messageBox}>
-                        <Infinite 
-                                elementHeight={50}
-                                displayBottomUpwards 
-                                infiniteLoadBeginEdgeOffset={200}
-                                onInfiniteLoad={infiniteLoadMessage}
-                                loadingSpinnerDelegate={LoadingSpinner}
-                                isInfiniteLoading={infiniteLoading}
-                                onInfiniteLoad={infiniteLoadMessage}
-                                useWindowAsScrollContainer
-                                >
-                            {/* insert messages for subsequent pages at this point */}
-                            {
-                                messages.map(message =>(
-                                    <Message content = {message.messageBody} style={{
-                                        height: '50px'
-                                    }} isMine = {message.senderId == user_id.current}  />
-                                ))
-                            }
-                        </Infinite>
+                        <LoadingSpinner isShow={infiniteLoading}/>
+                        {
+                            messages.map((message, idx) =>(
+                                <Message key={idx} content = {message.messageBody} isMine = {message.senderId == user_id.current}  />
+                            ))
+                        }
                     </div>
                     <div className="box-footer">
                         <form>
@@ -173,7 +198,7 @@ function ChattingWindow(props) {
                         </form>
                     </div>
                 </Col>
-                <Col className="" sm = {0} md = {0} lg ={5}>
+                <Col className="profile-col" sm = {0} md = {0} lg ={5}>
                     <Card onClick={handleCardClick}>
                         <div className="img-indicator" style={{
                             position: "absolute",
@@ -186,7 +211,7 @@ function ChattingWindow(props) {
                             zIndex: "99"
                         }}>
                             {
-                            targetUser.img_urls.map((value, idx) => <div className="img-indicator" style={{
+                            targetUser.photos?.map((value, idx) => <div className="img-indicator" style={{
                                     width: "100%",
                                     height: "6px",
                                     borderRadius:"5px",
@@ -198,12 +223,12 @@ function ChattingWindow(props) {
                         
                         <div className="card-img">
                             <Card.Img variant="top"  style={{
-                                backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(0, 0, 0, 0.3), transparent, transparent), url('${targetUser.img_urls[currentImg]}')`,
+                                backgroundImage: `linear-gradient(to top, rgb(0, 0, 0), rgb(0, 0, 0, 0.3), transparent, transparent), url('${targetUser.photos? targetUser.photos[currentImg] : ""}')`,
                                 backgroundPosition: '50% 0%',
                                 backgroundRepeat: "no-repeat",
                                 backgroundSize: "cover",
                             }}/>
-                            {targetUser.img_urls.length > 1 && <div className = "card-indicator">
+                            {targetUser.photos?.length > 1 && <div className = "card-indicator">
                                 <svg className="indicator indicator-left" viewBox="0 0 24 24"  aria-hidden="false" role="img"><path className="" d="M13.98 20.717a1.79 1.79 0 0 0 2.685 0 1.79 1.79 0 0 0 0-2.684l-7.158-6.62 7.158-6.8a1.79 1.79 0 0 0 0-2.684 1.79 1.79 0 0 0-2.684 0L5.929 9.98a1.79 1.79 0 0 0 0 2.684l8.052 8.052z"></path><title id="bb01635153c894db">Back</title></svg>
                                 <svg className="indicator indicator-right" viewBox="0 0 24 24"  aria-hidden="false" role="img"><path className="" d="M13.98 20.717a1.79 1.79 0 0 0 2.685 0 1.79 1.79 0 0 0 0-2.684l-7.158-6.62 7.158-6.8a1.79 1.79 0 0 0 0-2.684 1.79 1.79 0 0 0-2.684 0L5.929 9.98a1.79 1.79 0 0 0 0 2.684l8.052 8.052z"></path><title id="feade9b75cd98b3d">Next</title></svg>
                             </div>}
@@ -211,8 +236,8 @@ function ChattingWindow(props) {
                         
                         <Card.Body>
                         <Card.Title>
+                            <span className="age disable-select">{currentYear - new Date(targetUser.dateOfBirth).getFullYear()}</span>
                             <span className="name disable-select">{targetUser.fullName}</span>
-                            <span className="age disable-select">{targetUser.age}</span>
                         </Card.Title>
                         <Card.Text className = "disable-select">
                             <svg className="Va(m) Sq(16px)" viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" role="presentation"><g transform="translate(2 5)" stroke="#fff" strokeWidth=".936" fill="none" fillRule="evenodd"><rect x="5.006" y="3.489" width="9.988" height="9.637" rx=".936"></rect><path d="M7.15 3.434h5.7V1.452a.728.728 0 0 0-.724-.732H7.874a.737.737 0 0 0-.725.732v1.982z"></path><rect x=".72" y="3.489" width="18.56" height="9.637" rx=".936"></rect></g></svg>
@@ -221,10 +246,6 @@ function ChattingWindow(props) {
                         <Card.Text className = "disable-select">
                             <svg className="Va(m) Sq(16px)" viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" role="presentation"><g stroke="#fff" strokeWidth=".936" fill="none" fillRule="evenodd"><path d="M19.695 9.518H4.427V21.15h15.268V9.52zM3.109 9.482h17.933L12.06 3.709 3.11 9.482z"></path><path d="M9.518 21.15h5.086v-6.632H9.518z"></path></g></svg>
                             <span className = "disable-select">Lives in {targetUser.address}</span>
-                        </Card.Text>
-                        <Card.Text className = "disable-select">
-                            <svg className="Va(m) Sq(16px)" viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" role="presentation"><g fill="#fff" stroke="#fff" strokeWidth=".5" fillRule="evenodd"><path d="M11.436 21.17l-.185-.165a35.36 35.36 0 0 1-3.615-3.801C5.222 14.244 4 11.658 4 9.524 4 5.305 7.267 2 11.436 2c4.168 0 7.437 3.305 7.437 7.524 0 4.903-6.953 11.214-7.237 11.48l-.2.167zm0-18.683c-3.869 0-6.9 3.091-6.9 7.037 0 4.401 5.771 9.927 6.897 10.972 1.12-1.054 6.902-6.694 6.902-10.95.001-3.968-3.03-7.059-6.9-7.059h.001z"></path><path d="M11.445 12.5a2.945 2.945 0 0 1-2.721-1.855 3.04 3.04 0 0 1 .641-3.269 2.905 2.905 0 0 1 3.213-.645 3.003 3.003 0 0 1 1.813 2.776c-.006 1.653-1.322 2.991-2.946 2.993zm0-5.544c-1.378 0-2.496 1.139-2.498 2.542 0 1.404 1.115 2.544 2.495 2.546a2.52 2.52 0 0 0 2.502-2.535 2.527 2.527 0 0 0-2.499-2.545v-.008z"></path></g></svg>
-                            <span className = "disable-select">{targetUser.distance} kilometers away</span>
                         </Card.Text>
                         <Card.Text>
                             {targetUser.bio}

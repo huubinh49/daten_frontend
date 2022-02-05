@@ -38,7 +38,7 @@ export default function DatingApp(props) {
                                     <React.Suspense fallback = {"loading..."}>
                                         <ChattingWindow />
                                     </React.Suspense>
-                                } path="/messages/:user_id" key="/messages/:id" />;
+                                } path="/messages/:target_id" key="/messages/:target_id" />;
                             <Route element = {
                                 <React.Suspense fallback = {"loading..."}>
                                     <Profile />

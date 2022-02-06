@@ -83,21 +83,22 @@ const MessageTab = memo((props) => {
         }
         messageRef.current.addEventListener("scroll", scrollHandler);
         loadMore();
-        // TODO: Not received new message notification
-        if(socket)
-        socket.on("newMessage", handleNewMessage)
+        if(socket.connected)
+        socket.on("newChattedPartner", handleNewChattedPartner)
         return () => {
             if(messageRef.current)
             messageRef.current.removeEventListener("scroll",scrollHandler );
 
-            socket.off("newMessage", handleNewMessage)
+            socket.off("newChattedPartner", handleNewChattedPartner)
         }
         
     }, [socket])
-    const handleNewMessage = (newMessage) => {
+    // TODO: Fix not received message || maybe due to accessing incorrect fields
+    const handleNewChattedPartner = (newChattedPartner) => {
+        console.log("message tab handle new message: ", newChattedPartner)
         setMessages((prevMessages) => [
             ...prevMessages,
-            newMessage
+            newChattedPartner
         ])  
     }
     return(

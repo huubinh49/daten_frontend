@@ -1,5 +1,20 @@
 import React from "react";
-import io from "socket.io-client";
+const io = require('socket.io-client')
+console.log('1');
 
-export const socket = io.connect(process.env.SOCKET_URL);
-export const SocketContext = React.createContext({});
+// Connect to server
+const socket = io.connect(process.env.SOCKET_URL, {reconnect: true});
+
+console.log('2');
+
+// Add a connect listener
+socket.on('connect', function(socket) { 
+    console.log('Connected!');
+});
+
+console.log('3');
+const SocketContext = React.createContext({});
+export  {
+    socket,
+    SocketContext
+}

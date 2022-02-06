@@ -8,8 +8,8 @@ import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import Picker from 'emoji-picker-react';
 import Button from '@restart/ui/esm/Button'
 import profileAPI from '../../api/profileAPI'
-import messageAPI from '../../api/messageAPI'
 import { SocketContext } from '../../socket/socket'
+import messageAPI from '../../api/messageAPI'
 
 const LoadingSpinner = (props) => (
     <div className={`infinite-load ${props.isShow? '': 'notShow'}`}>
@@ -36,17 +36,10 @@ function ChattingWindow(props) {
     const socket = useContext(SocketContext);
     const { target_id } = useParams();
     const user_id = useRef();
-    const initialize = useCallback(async () => {
-        console.log("socket: ", socket)
+    const initialize = async () => {
         const target_user = await profileAPI.get(target_id);
-        console.log("Chatting with: ", target_id,  target_user)
         user_id.current =  localStorage.getItem('user_id');
         setTargetUser(() => target_user.profile);
-        if(socket.connected){
-            socket.emit("addUser", user_id.current);
-            socket.on("newMessage", handleNewMessage);
-        }
-        
         const margin = 1; 
         const scrollHandler = (event) => {
             // if (messageBox.current.scrollTop + messageBox.current.clientHeight + margin  >= messageBox.current.scrollHeight) {
@@ -59,7 +52,7 @@ function ChattingWindow(props) {
         }
         messageBox.current.addEventListener("scroll",scrollHandler );
         infiniteLoadMessage();
-    }, [])
+    }
     // TODO: fix it scroll to bottom every infinite load
     const scrollToBottom = useCallback(()=>{
         const domNode = messageBox.current;
@@ -72,16 +65,28 @@ function ChattingWindow(props) {
     
     useEffect(()=> {
         initialize();
+      
+    }, [target_id]);
+    
+    useEffect(() => {
+        if(socket.connected && user_id.current){
+            socket.emit("addUser", {
+                'userId': user_id.current
+            });
+            socket.on("newMessage", handleNewMessage);
+        }
+        
         return () => {
             socket.off("newMessage", handleNewMessage);
         }
-    }, [target_id]);
+    }, [socket, user_id.current]);
     
-    const handleNewMessage = useCallback((arrivalMessage) => {
+    const handleNewMessage = (arrivalMessage) => {
         const ids = [user_id.current, target_id]
+        console.log("New messsage: ", arrivalMessage)
         if(arrivalMessage && ids.indexOf(arrivalMessage.senderId) !== -1 && ids.indexOf(arrivalMessage.recipientId) !== -1)
         setMessages((prev) => [...prev, arrivalMessage]);
-    }, []);
+    };
 
     const infiniteLoadMessage  = useCallback(() => {
         setInfiniteLoading(true);
@@ -110,24 +115,25 @@ function ChattingWindow(props) {
         })
     }, [])
     
-    const messageChanging = useCallback((event)=>{
+    const messageChanging = (event)=>{
         setTypingMessage(()=> event.target.value)
-    }, [])
-    const onEmojiClick = useCallback((event, emojiObject) => {
+    }
+    const onEmojiClick = (event, emojiObject) => {
         setTypingMessage((oldMessage)=> oldMessage+ emojiObject.emoji);
-    }, [])
+    }
 
-    const handleEmojiButton = useCallback((event) =>{
+    const handleEmojiButton = (event) =>{
         event.preventDefault();
         setChoosingEmoji((oldState)=>!oldState);
-    }, [])
-    const handleSubmitButton = useCallback(async (event) => {
+    }
+    const handleSubmitButton = async (event) => {
         event.preventDefault();
         const message = {
           senderId: user_id.current,
           recipientId: target_id,
           messageBody: typingMessage
         };
+        console.log("send message: ", message)
         try {
           const res = await messageAPI.create(message);
           setMessages([...messages, res]);
@@ -135,7 +141,7 @@ function ChattingWindow(props) {
         } catch (err) {
           console.log(err);
         }
-    }, []);
+    };
     
     
     const handleCardClick = useCallback((event)=>{
@@ -149,11 +155,9 @@ function ChattingWindow(props) {
     }, [])
     
     useEffect(() => {
-      console.log("Messages: ", messages)
+      console.log("Update messages: ", messages)
     }, [messages]);
     
-
-
     return (
         <Container className="chatting" fluid={true}>
             <Row>

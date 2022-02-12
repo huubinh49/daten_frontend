@@ -1,11 +1,11 @@
 import React, { memo, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap';
-import { load } from 'react-cookies';
 import { Link } from 'react-router-dom';
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
-import { SocketContext } from '../../socket/socket'
+import { SocketContext } from '../../communicate/socket'
 import matchAPI from '../../api/matchAPI';
 import "./MessageTab.scss"
+import { useUserID } from '../../hooks/auth';
 
 const Avatar = memo((props) => (
     <div className= "card-avatar" style={{
@@ -52,11 +52,10 @@ const MessageTab = memo((props) => {
     const messageRef = useRef(null);
     const [chatting, setChatting] = useContext(ChattingContext);
     const socket = useContext(SocketContext)
-    
+    const [userId, useUserId] = useUserID();
     const loadMore = useCallback(async () => {
-            const user_id = localStorage.getItem('user_id');
             try{
-                const res = await matchAPI.getAllChatted(user_id)
+                const res = await matchAPI.getAllChatted(userId)
                 const newMessages = res.messages
                 console.log("Get already chatted partners: ", res)
                 setMessages(prevMessages =>(
@@ -108,7 +107,7 @@ const MessageTab = memo((props) => {
             <Container>
                 <Row >
                     {messages.map((message, idx) => <Col sm={12} style={{padding: "0px"}}>
-                        <Link to={`/dating/messages/${message.user_id}`} onClick={() => {
+                        <Link to={`/dating/messages/${message.userId}`} onClick={() => {
                             setChatting(true)
                         }} >
                             <MessageTile {...message} key ={idx} is_private = {props.is_private}/>

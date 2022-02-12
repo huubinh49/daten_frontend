@@ -4,7 +4,8 @@ const redux = require("redux");
 const saveState = (state)=>{
     localStorage.setItem("profile", JSON.stringify(state.dating.profile))
 }
-const store = redux.createStore(root_reducer, redux.applyMiddleware(thunk));
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose;
+const store = redux.createStore(root_reducer, composeEnhancers(redux.applyMiddleware(thunk)));
 store.subscribe(()=>{
     saveState(store.getState());
 })

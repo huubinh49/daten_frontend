@@ -4,6 +4,7 @@ import "./Profile.scss"
 import profileAPI from '../../api/profileAPI';
 import { Link } from 'react-router-dom';
 import useProfile from '../../hooks/profile';
+import { useUserID } from '../../hooks/auth';
   
 
 const currentYear = new Date().getFullYear()
@@ -12,11 +13,11 @@ const Profile = (props) => {
     const cardElem = useRef(null)
     const [currentImg, setCurrentImg] = useState(0);
     const [profile, setProfile] = useProfile();
+    const [userId, useUserId] = useUserID();
     useEffect(async () => {
         try{
-            const user_id = localStorage.getItem('user_id')
-            if(user_id !== 'undefined' && profile !== 'undefined' && !Object.keys(profile).length){
-                const res = await profileAPI.get(user_id);
+            if(userId && (!profile || profile == 'undefined' || !Object.keys(profile).length)){
+                const res = await profileAPI.get(userId);
                 setProfile(res.profile);
             }
         }catch(error){

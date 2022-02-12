@@ -4,7 +4,7 @@ import Footer from '../../components/Footer/Footer';
 import Header from '../../components/Header/Header'
 import LoginForm from '../../components/LoginForm/LoginForm';
 import LoginModal from '../../components/LoginModal/LoginModal';
-import useAuth from '../../hooks/auth';
+import {useAuth, useUserID } from '../../hooks/auth';
 import { useNavigate } from 'react-router';
 import "./HomePage.scss";
 import profileAPI from '../../api/profileAPI';
@@ -14,15 +14,20 @@ const HomePage = (props) => {
     // Variables for control login modal
     const [showLoginModal, setLoginModalShow] = useState(false);
     const [fullscreenModal, setFullscreenModal] = useState(true);
-    const {isAuthenticated, tryAutoSignIn} = useAuth();
+    const [isAuthenticated, setAuthenticated] = useAuth();
+    const [userId, setUserId] = useUserID();
     const [profile, setProfile] = useProfile();
     const closeLoginModal = () => setLoginModalShow(false);
     const checkAlreadyHaveProfile = async (user_id) => {
         try {
+            if(userId && profile && profile !== 'undefined' && Object.keys(profile).length){
+                navigate("/dating");
+                return;
+            }
             const res = await profileAPI.get(user_id);
             console.log('check already have profile: ', res)
+            setProfile(res.profile)
             if(res.profile != null){
-                setProfile(res.profile)
                 navigate("/dating")
             }else{
                 navigate("/create-profile")                    
@@ -31,22 +36,21 @@ const HomePage = (props) => {
             console.log(error)
         }   
     }
-    const openLoginModal = async () => {
-        const user_id = localStorage.getItem("user_id")
-        console.log(isAuthenticated, user_id)
-        if (isAuthenticated && user_id !== 'undefined') {
-            checkAlreadyHaveProfile(user_id)
-        }else{
+    const openLoginModal = () => {
+        if(isAuthenticated && userId){
+            checkAlreadyHaveProfile(userId)
+        }
+        else{
             setFullscreenModal("md-down")    
             setLoginModalShow(true)   
         }
     };
    
-    useEffect(async () => {
-        await tryAutoSignIn();
-        const user_id = localStorage.getItem("user_id")
-        if (isAuthenticated && user_id !== 'undefined') {
-            checkAlreadyHaveProfile(user_id)
+    useEffect(() => {
+        if(userId && isAuthenticated){
+            checkAlreadyHaveProfile(userId)
+        }else{
+            console.error("Not authenticated")
         }
     }, [])
     // Variables for control login form

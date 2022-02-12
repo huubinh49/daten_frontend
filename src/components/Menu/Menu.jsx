@@ -8,18 +8,16 @@ import {Link} from 'react-router-dom';
 import "./Menu.scss";
 import useProfile from '../../hooks/profile';
 import profileAPI from '../../api/profileAPI';
-
+import {useUserID} from '../../hooks/auth';
 function Menu(props) {
     const [key, setKey] = useState('matches');
     const [chatting, setChatting] = useContext(ChattingContext);
     const [profile, setProfile] = useProfile();
-
+    const [userId, setUserId] = useUserID();
     useEffect(()=>{
-        const initializeState = async () => {
-            const user_id = localStorage.getItem('user_id')
-            console.log(user_id, profile)
-            if(user_id != 'undefined' && (!profile || profile == 'undefined' || !Object.keys(profile).length)){
-                const res = await profileAPI.get(user_id);
+        const initializeState = async () => {    
+            if(userId && (!profile || profile == 'undefined' || !Object.keys(profile).length)){
+                const res = await profileAPI.get(userId);
                 setProfile(res.profile);
             }
         }

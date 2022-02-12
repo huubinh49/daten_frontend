@@ -9,6 +9,7 @@ import * as yup from "yup";
 import { Link } from 'react-router-dom';
 import Button from '@restart/ui/esm/Button';
 import useProfile from '../../hooks/profile';
+import { useUserID } from '../../hooks/auth';
   
 const schema = yup.object().shape({
     gender: yup.string()
@@ -17,7 +18,6 @@ const schema = yup.object().shape({
         .required('Interested in gender is required')
 })
 
-// TODO: Auto fill data into form
 const ProfileEdit = (props) => {
     const fields = [
         "work",
@@ -31,7 +31,6 @@ const ProfileEdit = (props) => {
     const [message, setMessage] = useState('')
     const [profile, setProfile] = useProfile();
     const [showAlert, setShowAlert] = useState(false);
-    const [currentPosition, setCurrentPosition] = useState([0, 0])
     const navigate = useNavigate();
 
 
@@ -41,20 +40,18 @@ const ProfileEdit = (props) => {
         })
     }))
     useEffect(async () => {
-        try{
-            const user_id = localStorage.getItem('user_id')
-            if(user_id !== 'undefined' && !Object.keys(profile).length){
-                const res = await profileAPI.get(user_id);
-                setProfile(res.profile);
-            }
-            const existingPhotoUrls = photosUrl;
-            for(let idx in profile.photos){
-                existingPhotoUrls[idx] = profile.photos[idx]
-            }
-            setPhotosUrl(existingPhotoUrls);
-        }catch(error){
-            console.log(error);
-        } 
+        if(!profile || profile == 'undefined' || !Object.keys(profile).length){
+            try{
+        
+                const existingPhotoUrls = photosUrl;
+                for(let idx in profile.photos){
+                    existingPhotoUrls[idx] = profile.photos[idx]
+                }
+                setPhotosUrl(existingPhotoUrls);
+            }catch(error){
+                console.log(error);
+            } 
+        }
     }, [profile])
     
     useEffect(() => {

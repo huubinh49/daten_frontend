@@ -1,8 +1,15 @@
 import { updateState } from '../utils'
 import * as actionTypes from './actionTypes'
 
+const getTokenFromLocalStorage = () => {
+    const token = localStorage.getItem('access_token');
+    if(token && token !== 'undefined'){
+        return token;
+    }
+    return null
+}
 const initialState = {
-    token:null,
+    token: getTokenFromLocalStorage(),
     error:null,
     loading:false,
 }

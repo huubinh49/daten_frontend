@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import matchAPI from '../../api/matchAPI';
 import "./Matches.scss";
-import { SocketContext } from '../../socket/socket';
+import { SocketContext } from '../../communicate/socket';
+import { useUserID } from '../../hooks/auth';
 const MatchCard = memo((props) => {
     return(
         
@@ -35,10 +36,10 @@ function Matches(props) {
     const socket = useContext(SocketContext);
     const [chatting, setChatting] = useContext(ChattingContext);
     const [profiles, setProfiles] = useState([])
+    const [userId, setUserId] = useUserID();
     // get more user already matched
     const loadMore = async ()  => {
-        const user_id = localStorage.getItem('user_id');
-        const res = await matchAPI.getAll(user_id)
+        const res = await matchAPI.getAll(userId)
         console.log('Matches query data: ', res)
         const newProfiles = res.matches
         console.log("matched profiles:", newProfiles)
@@ -88,7 +89,7 @@ function Matches(props) {
                     {profiles && profiles.map((profile, idx) => <Col style={{
                         padding: "8px"
                     }} md={6} lg={4}>
-                        <Link to={`/dating/messages/${profile.userId}`} onClick={() => setChatting(true)} >
+                        <Link key={idx} to={`/dating/messages/${profile.userId}`} onClick={() => setChatting(true)} >
                             <MatchCard {...profile} />
                         </Link>
                     </Col>)}

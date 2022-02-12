@@ -8,9 +8,13 @@ import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import Picker from 'emoji-picker-react';
 import Button from '@restart/ui/esm/Button'
 import profileAPI from '../../api/profileAPI'
-import { SocketContext } from '../../socket/socket'
+import { SocketContext } from '../../communicate/socket'
 import messageAPI from '../../api/messageAPI'
-
+import axiosClient from '../../api/axiosClient'
+import Videocam from '@material-ui/icons/Videocam'
+import CloseIcon from '@material-ui/icons/Close';
+import { useNavigate } from 'react-router'
+import { useUserID } from '../../hooks/auth'
 const LoadingSpinner = (props) => (
     <div className={`infinite-load ${props.isShow? '': 'notShow'}`}>
             <p>Loading...</p>
@@ -24,6 +28,7 @@ const Message = (props) => (
 const currentYear = new Date().getFullYear()
 function ChattingWindow(props) {
     const [chatting, setChatting] = useContext(ChattingContext);
+    const [callLoading, setCallLoading] = useState(false);
     const [typingMessage, setTypingMessage] = useState('')
     const [choosingEmoji, setChoosingEmoji] = useState(false);
     const [currentImg, setCurrentImg] = useState(0);
@@ -35,25 +40,24 @@ function ChattingWindow(props) {
     const [firstLoad, setFirstLoad] = useState(true);
     const socket = useContext(SocketContext);
     const { target_id } = useParams();
-    const user_id = useRef();
+    const [userId, setUserId] = useUserID();
+    const navigate = useNavigate()
+    const scrollHandler = (event) => {
+        // if (messageBox.current.scrollTop + messageBox.current.clientHeight + margin  >= messageBox.current.scrollHeight) {
+        //     // infiniteLoadMessage();
+            
+        // }
+        if(messageBox.current.scrollTop === 0){
+            infiniteLoadMessage();
+        }
+    }
     const initialize = async () => {
         const target_user = await profileAPI.get(target_id);
-        user_id.current =  localStorage.getItem('user_id');
         setTargetUser(() => target_user.profile);
         const margin = 1; 
-        const scrollHandler = (event) => {
-            // if (messageBox.current.scrollTop + messageBox.current.clientHeight + margin  >= messageBox.current.scrollHeight) {
-            //     // infiniteLoadMessage();
-                
-            // }
-            if(messageBox.current.scrollTop === 0){
-                infiniteLoadMessage();
-            }
-        }
-        messageBox.current.addEventListener("scroll",scrollHandler );
+        messageBox.current && messageBox.current.addEventListener("scroll",scrollHandler );
         infiniteLoadMessage();
     }
-    // TODO: fix it scroll to bottom every infinite load
     const scrollToBottom = useCallback(()=>{
         const domNode = messageBox.current;
         if (domNode && firstLoad == true) {
@@ -65,13 +69,15 @@ function ChattingWindow(props) {
     
     useEffect(()=> {
         initialize();
-      
+        return () =>{
+            messageBox.current && messageBox.current.removeEventListener("scroll",scrollHandler);
+        }
     }, [target_id]);
     
     useEffect(() => {
-        if(socket.connected && user_id.current){
+        if(socket.connected && userId){
             socket.emit("addUser", {
-                'userId': user_id.current
+                'userId': userId
             });
             socket.on("newMessage", handleNewMessage);
         }
@@ -79,10 +85,14 @@ function ChattingWindow(props) {
         return () => {
             socket.off("newMessage", handleNewMessage);
         }
-    }, [socket, user_id.current]);
+    }, [socket, userId]);
     
+    const handleJoin = () => {
+        window.open(`http://localhost:3000/dating/call/${target_id}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
+    }
+
     const handleNewMessage = (arrivalMessage) => {
-        const ids = [user_id.current, target_id]
+        const ids = [userId, target_id]
         console.log("New messsage: ", arrivalMessage)
         if(arrivalMessage && ids.indexOf(arrivalMessage.senderId) !== -1 && ids.indexOf(arrivalMessage.recipientId) !== -1)
         setMessages((prev) => [...prev, arrivalMessage]);
@@ -129,7 +139,7 @@ function ChattingWindow(props) {
     const handleSubmitButton = async (event) => {
         event.preventDefault();
         const message = {
-          senderId: user_id.current,
+          senderId: userId,
           recipientId: target_id,
           messageBody: typingMessage
         };
@@ -171,15 +181,20 @@ function ChattingWindow(props) {
                             }} />
                             <h3>{`You matched with ${targetUser.fullName} on 12/21/2021`}</h3>
                         </div>
+                        <Videocam className="join-button" variant="contained" onClick={handleJoin}>
+                        </Videocam>
                         <Link className="header-action" to="/dating" onClick={()=> setChatting(false)}>
-                            <svg class="Sq(24px) P(4px)" viewBox="0 0 24 24" width="24px" height="24px" focusable="false" aria-hidden="true" role="presentation"><path class="" d="M14.926 12.56v-1.14l5.282 5.288c1.056.977 1.056 2.441 0 3.499-.813 1.057-2.438 1.057-3.413 0L11.512 15h1.138l-5.363 5.125c-.975 1.058-2.438 1.058-3.495 0-1.056-.813-1.056-2.44 0-3.417l5.201-5.288v1.14L3.873 7.27c-1.137-.976-1.137-2.44 0-3.417a1.973 1.973 0 0 1 3.251 0l5.282 5.207H11.27l5.444-5.207c.975-1.139 2.438-1.139 3.413 0 1.057.814 1.057 2.44 0 3.417l-5.2 5.288z"></path></svg>
+                            <CloseIcon style ={{
+                                width: "24px",
+                                height: "24px"
+                            }} />
                         </Link>
                     </div>
                     <div className = 'box-body' ref = {messageBox}>
                         <LoadingSpinner isShow={infiniteLoading}/>
                         {
                             messages.map((message, idx) =>(
-                                <Message key={idx} content = {message.messageBody} isMine = {message.senderId == user_id.current}  />
+                                <Message key={idx} content = {message.messageBody} isMine = {message.senderId == userId}  />
                             ))
                         }
                     </div>

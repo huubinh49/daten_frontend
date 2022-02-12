@@ -33,7 +33,7 @@ export const authLogout = ()=>{
     };
 }
 export const checkAuthentication = ()=>{
-    return dispatch =>{
+    return async dispatch =>{
         const access = localStorage.getItem("access_token") 
         const refresh = localStorage.getItem("refresh_token")
         console.log("check authenticate: ", access, refresh)
@@ -48,126 +48,102 @@ export const checkAuthentication = ()=>{
             }else{
                 const exp_access = decode(access).exp;
                 if(exp_access*1000 <= new Date().getTime()){
-                    dispatch(obtainNewAccessToken(refresh))
+                    await dispatch(obtainNewAccessToken(refresh))
                     return;
                 }else{
-                    dispatch(authSuccess(access))
+                    await dispatch(authSuccess(access))
                 }
             }
         }
     }
 }
 
-export const authSignup = (formData, onSuccess = () => {}, onFailure = (err) => {})=>{
-    return  dispatch =>{
+export function authSignup(formData, onSuccess = () => {}, onFailure = (err) => {}){
+    return async  dispatch =>{
         dispatch(authStart());
-        axiosClient.post('/auth/signup/',{
-            email: formData.getAll("email")[0],
-            password: formData.getAll("password")[0],
+        try{
+            const token = await axiosClient.post('/auth/signup/',{
+                email: formData.getAll("email")[0],
+                password: formData.getAll("password")[0],
+            }
+            ,{
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            }
+            )
+            localStorage.setItem('refresh_token', token.refresh_token)
+            dispatch(authSuccess(token.access_token))
+            onSuccess();
+        }catch(err){
+            dispatch(authFail(err))
+            onFailure(err);
         }
-        ,{
-            headers: {
-                "Content-Type": "multipart/form-data"
-            }
-        }
-        )
-        .then(
-            res =>{
-                console.log(res)
-                const token = res;
-                localStorage.setItem('refresh_token', token.refresh_token)
-                dispatch(authSuccess(token.access_token))
-                onSuccess();
-            }
-        )
-        .catch(
-            err =>{
-                dispatch(authFail(err))
-                onFailure(err);
-            }
-        )
     }   
 }
-export const authLogin = (formData, onSuccess = () => {}, onFailure = (err) => {})=>{
-    return dispatch =>{
+export  function authLogin(formData, onSuccess = () => {}, onFailure = (err) => {}){
+    return async dispatch => {
         dispatch(authStart());
-        axiosClient.post('/auth/login/',{
-            email: formData.getAll("email")[0],
-            password: formData.getAll("password")[0],
-        },{
-            headers: {
-                "Content-Type": "multipart/form-data",
-            }
-        })
-        .then(
-            res =>{
-                const token = res;
-                localStorage.setItem('refresh_token', token.refresh_token)
-                dispatch(authSuccess(token.access_token))
-                onSuccess();
-            }
-        )
-        .catch(
-            err =>{
-                onFailure(err);
-                dispatch(authFail(err))
-            }
-        )
+        try{
+            const token = await axiosClient.post('/auth/login/',{
+                email: formData.getAll("email")[0],
+                password: formData.getAll("password")[0],
+            },{
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                }
+            })
+
+            localStorage.setItem('refresh_token', token.refresh_token)
+            dispatch(authSuccess(token.access_token))
+            onSuccess();
+        }catch(err){
+            onFailure(err);
+            dispatch(authFail(err))
+        }
     }
 }
 
-export const obtainNewAccessToken = (refresh_token)=>{
-    return dispatch =>{
+export  function obtainNewAccessToken (refresh_token){
+    return async dispatch =>{
         dispatch(authStart())
-        axiosClient.post('/auth/refresh-token',{
-            'refresh_token': refresh_token
-        },  {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          })
-        .then(
-            res => {
-                const newAccessToken = res.access_token;
-                localStorage.setItem('access_token', newAccessToken)
-                dispatch(authSuccess(newAccessToken))
-            }
-        )
-        .catch(
-            err =>{
-                console.log(err)
-                dispatch(authFail(err));
-            }
-        )
+        try{
+            const res = await axiosClient.post('/auth/refresh-token',{
+                'refresh_token': refresh_token
+            },  {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+
+            const newAccessToken = res.access_token;
+            dispatch(authSuccess(newAccessToken))
+        }catch(err){
+            console.log(err)
+            dispatch(authFail(err));
+        }
     }
 }
 
 
-export const OAuthLogin = (response, provider, onSuccess = () => {}, onFailure = (err) => {})=>{
+export  function OAuthLogin(response, provider, onSuccess = () => {}, onFailure = (err) => {}){
     const access_token = response.accessToken;
-    return dispatch =>{
+    return async dispatch =>{
         dispatch(authStart());
-        axiosClient.post(`auth/${provider}/token`,{
-            access_token
-        },{
-            headers: {
-                'Authorization': `JWT ${access_token}`
-            },
-        })
-        .then(
-            res =>{
-                console.log("received from server: ", res, decode(res.access_token))
-                const token = res;
-                localStorage.setItem('refresh_token', token.refresh_token)
-                dispatch(authSuccess(token.access_token))
-                onSuccess();
-            }
-        )
-        .catch(
-            err =>{
-                onFailure(err)
-                dispatch(authFail(err))
-            }
-        )
+        try{
+            const token = await axiosClient.post(`auth/${provider}/token`,{
+                access_token
+            },{
+                headers: {
+                    'Authorization': `JWT ${access_token}`
+                },
+            })
+            localStorage.setItem('refresh_token', token.refresh_token)
+            dispatch(authSuccess(token.access_token))
+            onSuccess();
+        }catch(err){
+            onFailure(err)
+            dispatch(authFail(err))
+        }
     }
 }

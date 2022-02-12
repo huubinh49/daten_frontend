@@ -19,7 +19,7 @@ const initializePeerConnection = () => {
     });
 }
 const initializeSocketConnection = () => {
-    return socket.connect(process.env.SOCKET_URL, {// need to provide backend server endpoint 
+    return socket.connect("localhost:5000", {// need to provide backend server endpoint 
                               // (ws://localhost:5000) if ssl provided then
                               // (wss://localhost:5000) 
         secure: true, 

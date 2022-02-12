@@ -10,7 +10,7 @@ export function useAuth() {
   useEffect(() => {
     console.log('User auth: ', token)
     if(!token)
-    dispatch(authActions.checkAuthentication())    
+    dispatch(authActions.checkAuthentication())
     if (token)
     // check before get state.auth.token
     setAuthenticated(true);
@@ -27,7 +27,7 @@ export function useAuth() {
 export function useUserID(){
   const token = useSelector(state=>state.auth.token);
   const dispatch = useDispatch();
-  const [userId, setUserId] = useState(decode(token).id)
+  const [userId, setUserId] = useState(token? decode(token).id : null)
   useEffect(() => {
     // check before get state.auth.token
     if (!token){

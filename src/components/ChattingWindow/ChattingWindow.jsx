@@ -51,10 +51,12 @@ function ChattingWindow(props) {
             infiniteLoadMessage();
         }
     }
+    
     const initialize = async () => {
         const target_user = await profileAPI.get(target_id);
         setTargetUser(() => target_user.profile);
         const margin = 1; 
+        currentMessagePage.current = 0;
         messageBox.current && messageBox.current.addEventListener("scroll",scrollHandler );
         infiniteLoadMessage();
     }
@@ -87,7 +89,8 @@ function ChattingWindow(props) {
         }
     }, [socket, userId]);
     
-    const handleJoin = () => {
+    // TODO: Alert callee, add pointer cursor call icon, 
+    const handleCall = () => {
         window.open(`http://localhost:3000/dating/call/${target_id}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
     }
 
@@ -104,14 +107,18 @@ function ChattingWindow(props) {
         messageAPI.get(target_id, currentMessagePage.current)
         .then(res => {
             console.log("Message: ", res)
-            if(res.messages && res.messages.length >= messageAPI.per_page){
+            if(res.messages){
                 if(currentMessagePage.current == 0){
+                    console.log('Get new message: ', res.messages.length)
+                    setMessages(()=> [...res.messages])
                     setTimeout(()=>{
                         scrollToBottom()
                     }, 500);
                 }
+                else {
+                    setMessages(prevMessages => [...prevMessages, ...res.messages])    
+                }
                 currentMessagePage.current += 1;
-                setMessages(prevMessages => [...prevMessages, ...res.messages])    
             }
             setTimeout(()=>{
                 setInfiniteLoading(false)
@@ -119,11 +126,14 @@ function ChattingWindow(props) {
         })
         .catch(err => {
             console.log(err)
+            if(err.response.status == 401){ // Unauthorized
+                navigate('/')
+            }
             setTimeout(()=>{
                 setInfiniteLoading(false)
             }, 500);
         })
-    }, [])
+    }, [target_id])
     
     const messageChanging = (event)=>{
         setTypingMessage(()=> event.target.value)
@@ -181,7 +191,10 @@ function ChattingWindow(props) {
                             }} />
                             <h3>{`You matched with ${targetUser.fullName} on 12/21/2021`}</h3>
                         </div>
-                        <Videocam className="join-button" variant="contained" onClick={handleJoin}>
+                        <Videocam style = {{
+                            cursor: 'pointer',
+                            margin: '0px 5px'
+                        }}className="call-button" variant="contained" onClick={handleCall}>
                         </Videocam>
                         <Link className="header-action" to="/dating" onClick={()=> setChatting(false)}>
                             <CloseIcon style ={{

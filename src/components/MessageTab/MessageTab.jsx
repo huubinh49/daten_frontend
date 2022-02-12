@@ -54,51 +54,73 @@ const MessageTab = memo((props) => {
     const socket = useContext(SocketContext)
     const [userId, useUserId] = useUserID();
     const loadMore = useCallback(async () => {
-            try{
-                const res = await matchAPI.getAllChatted(userId)
-                const newMessages = res.messages
-                console.log("Get already chatted partners: ", res)
-                setMessages(prevMessages =>(
-                    [
-                        ...prevMessages,
-                        ...newMessages    
-                    ]
-                ))
-            }catch(error){
-                console.log(error)
-            }
+        try{
+            const res = await matchAPI.getAllChatted(userId)
+            const newMessages = res.messages
+            console.log("Get already chatted partners: ", res)
+            setMessages(prevMessages =>(
+                [
+                    ...prevMessages,
+                    ...newMessages    
+                ]
+            ))
+        }catch(error){
+            console.log(error)
+        }
             
     }, []);
    
 
+    const scrollHandler = (event) => {
+        if (
+          messageRef.current.scrollTop + messageRef.current.clientHeight + 1  >= messageRef.current.scrollHeight
+        ) {
+          loadMore();
+        }
+    }
+    
     useEffect(() => {
-        const margin = 1; 
-        const scrollHandler = (event) => {
-            if (
-              messageRef.current.scrollTop + messageRef.current.clientHeight + margin  >= messageRef.current.scrollHeight
-            ) {
-              loadMore();
-            }
+        if(socket.connected){
+            console.log("Add event chatted partners")
+            socket.on("newChattedPartner", handleNewChattedPartner)
         }
         messageRef.current.addEventListener("scroll", scrollHandler);
         loadMore();
-        if(socket.connected)
-        socket.on("newChattedPartner", handleNewChattedPartner)
         return () => {
+            socket.off("newChattedPartner", handleNewChattedPartner)
             if(messageRef.current)
-            messageRef.current.removeEventListener("scroll",scrollHandler );
-
+                messageRef.current.removeEventListener("scroll",scrollHandler);
+        }
+    }, [])
+    useEffect(() => {
+        
+        if(socket.connected){
+            console.log("Add event chatted partners")
+            socket.on("newChattedPartner", handleNewChattedPartner)
+        }
+        return () => {
             socket.off("newChattedPartner", handleNewChattedPartner)
         }
-        
-    }, [socket])
+    }, [socket.connected])
+    
     // TODO: Fix not received message || maybe due to accessing incorrect fields
     const handleNewChattedPartner = (newChattedPartner) => {
-        console.log("message tab handle new message: ", newChattedPartner)
-        setMessages((prevMessages) => [
-            ...prevMessages,
-            newChattedPartner
-        ])  
+        console.logog("New chatted partner: ", newChattedPartner)
+        setMessages((prevMessages) => {
+            const newMessages = [...prevMessages];
+            let isNewPartner = true;
+            for(let idx in newMessages){
+                if(newChattedPartner.userId == newMessages[idx].userId){
+                    newMessages[idx] = newChattedPartner;
+                    isNewPartner = false;
+                }
+            }
+            if(isNewPartner){
+                newMessages.push(newChattedPartner)
+            }
+            console.log("updating new chatted partner: ", newMessages)
+            return newMessages;
+        })
     }
     return(
         <div className="message" ref={messageRef} style={{

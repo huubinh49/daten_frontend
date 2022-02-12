@@ -5,7 +5,7 @@ import profileAPI from '../../api/profileAPI';
 import { Link } from 'react-router-dom';
 import useProfile from '../../hooks/profile';
 import { useUserID } from '../../hooks/auth';
-  
+import {useNavigate} from 'react-router-dom'; 
 
 const currentYear = new Date().getFullYear()
 const Profile = (props) => {
@@ -14,6 +14,7 @@ const Profile = (props) => {
     const [currentImg, setCurrentImg] = useState(0);
     const [profile, setProfile] = useProfile();
     const [userId, useUserId] = useUserID();
+    const navigate = useNavigate()
     useEffect(async () => {
         try{
             if(userId && (!profile || profile == 'undefined' || !Object.keys(profile).length)){
@@ -21,6 +22,10 @@ const Profile = (props) => {
                 setProfile(res.profile);
             }
         }catch(error){
+            if(error.response.status == 401){
+                // TODO: fix call api fail but not navigate to / & not log error
+                navigate("/")
+            }
             console.log(error);
         }
     }, []);

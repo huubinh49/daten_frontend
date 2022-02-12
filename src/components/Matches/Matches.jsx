@@ -6,6 +6,7 @@ import matchAPI from '../../api/matchAPI';
 import "./Matches.scss";
 import { SocketContext } from '../../communicate/socket';
 import { useUserID } from '../../hooks/auth';
+import { useNavigate } from 'react-router';
 const MatchCard = memo((props) => {
     return(
         
@@ -37,18 +38,25 @@ function Matches(props) {
     const [chatting, setChatting] = useContext(ChattingContext);
     const [profiles, setProfiles] = useState([])
     const [userId, setUserId] = useUserID();
+    const navigate = useNavigate();
     // get more user already matched
     const loadMore = async ()  => {
-        const res = await matchAPI.getAll(userId)
-        console.log('Matches query data: ', res)
-        const newProfiles = res.matches
-        console.log("matched profiles:", newProfiles)
-        setProfiles(prevProfiles =>(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-            [
-                ...prevProfiles,
-                ...newProfiles    
-            ]
-        ))
+        try{
+            const res = await matchAPI.getAll(userId)
+            console.log('Matches query data: ', res)
+            const newProfiles = res.matches
+            console.log("matched profiles:", newProfiles)
+            setProfiles(prevProfiles =>(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+                [
+                    ...prevProfiles,
+                    ...newProfiles    
+                ]
+            ))
+        }catch(error){
+            if(error.response.status === 403)
+            navigate('/');
+        }
+        
     };
     const handleNewMatch = (matcher) => {
         console.log("new matcher: ", matcher)

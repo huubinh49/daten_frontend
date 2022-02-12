@@ -3,7 +3,7 @@ const io = require('socket.io-client')
 console.log('1');
 
 // Connect to server
-const socket = io.connect(process.env.SOCKET_URL, {
+const socket = io.connect("localhost:5000", {
     // need to provide backend server endpoint 
     // (ws://localhost:5000) if ssl provided then
     // (wss://localhost:5000) 

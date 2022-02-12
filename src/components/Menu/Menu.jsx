@@ -9,17 +9,24 @@ import "./Menu.scss";
 import useProfile from '../../hooks/profile';
 import profileAPI from '../../api/profileAPI';
 import {useUserID} from '../../hooks/auth';
+import { useNavigate } from 'react-router';
 function Menu(props) {
     const [key, setKey] = useState('matches');
     const [chatting, setChatting] = useContext(ChattingContext);
     const [profile, setProfile] = useProfile();
     const [userId, setUserId] = useUserID();
+    const navigate = useNavigate();
     useEffect(()=>{
         const initializeState = async () => {    
-            if(userId && (!profile || profile == 'undefined' || !Object.keys(profile).length)){
-                const res = await profileAPI.get(userId);
-                setProfile(res.profile);
+            try{
+                if(userId && (!profile || profile == 'undefined' || !Object.keys(profile).length)){
+                    const res = await profileAPI.get(userId);
+                    setProfile(res.profile);
+                }
+            }catch(error){
+                console.error(error);
             }
+            
         }
         initializeState();
     }, []);
@@ -34,7 +41,7 @@ function Menu(props) {
                         width: "40px",
                         height: "40px",
                         border: "2px solid white"
-                    }} img_url = {profile? profile.photos[0]: ""} />
+                    }} img_url = {profile.photos? profile.photos[0]: ""} />
 
                     <h2 className="profile-name">{profile.fullName}</h2>
                 </Link>

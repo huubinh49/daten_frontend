@@ -47,6 +47,7 @@ const HomePage = (props) => {
     };
    
     useEffect(() => {
+        
         if(userId && isAuthenticated){
             checkAlreadyHaveProfile(userId)
         }else{

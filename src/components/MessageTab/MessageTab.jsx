@@ -6,6 +6,7 @@ import { SocketContext } from '../../communicate/socket'
 import matchAPI from '../../api/matchAPI';
 import "./MessageTab.scss"
 import { useUserID } from '../../hooks/auth';
+import { useNavigate } from 'react-router';
 
 const Avatar = memo((props) => (
     <div className= "card-avatar" style={{
@@ -53,6 +54,7 @@ const MessageTab = memo((props) => {
     const [chatting, setChatting] = useContext(ChattingContext);
     const socket = useContext(SocketContext)
     const [userId, useUserId] = useUserID();
+    const navigate = useNavigate();
     const loadMore = useCallback(async () => {
         try{
             const res = await matchAPI.getAllChatted(userId)
@@ -65,6 +67,8 @@ const MessageTab = memo((props) => {
                 ]
             ))
         }catch(error){
+            if(error.response.status === 401)
+            navigate('/');
             console.log(error)
         }
             
@@ -80,22 +84,21 @@ const MessageTab = memo((props) => {
     }
     
     useEffect(() => {
-        if(socket.connected){
-            console.log("Add event chatted partners")
-            socket.on("newChattedPartner", handleNewChattedPartner)
-        }
         messageRef.current.addEventListener("scroll", scrollHandler);
         loadMore();
         return () => {
-            socket.off("newChattedPartner", handleNewChattedPartner)
             if(messageRef.current)
                 messageRef.current.removeEventListener("scroll",scrollHandler);
         }
     }, [])
+
     useEffect(() => {
         
         if(socket.connected){
-            console.log("Add event chatted partners")
+            socket.emit("addUser", {
+                'userId': userId
+                });
+            console.log("Reconnect: Add event chatted partners")
             socket.on("newChattedPartner", handleNewChattedPartner)
         }
         return () => {
@@ -103,9 +106,7 @@ const MessageTab = memo((props) => {
         }
     }, [socket.connected])
     
-    // TODO: Fix not received message || maybe due to accessing incorrect fields
     const handleNewChattedPartner = (newChattedPartner) => {
-        console.logog("New chatted partner: ", newChattedPartner)
         setMessages((prevMessages) => {
             const newMessages = [...prevMessages];
             let isNewPartner = true;
@@ -118,7 +119,6 @@ const MessageTab = memo((props) => {
             if(isNewPartner){
                 newMessages.push(newChattedPartner)
             }
-            console.log("updating new chatted partner: ", newMessages)
             return newMessages;
         })
     }

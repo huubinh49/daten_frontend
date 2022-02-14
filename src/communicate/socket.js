@@ -18,9 +18,12 @@ console.log('2');
 // Add a connect listener
 socket.on('connect', function(socket) { 
     console.log('Socket is connected!');
+
 });
+
 socket.on('disconnect', () => {
     console.log('Socket is disconnected!');
+    socket.removeAllListeners();
 });
 socket.on('error', (err) => {
     console.log('Socket Error: ', err);

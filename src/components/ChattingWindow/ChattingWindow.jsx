@@ -4,17 +4,27 @@ import { ButtonGroup, Card, Col, Container, Row } from 'react-bootstrap'
 import { Avatar } from '../MessageTab/MessageTab'
 import { Link, useParams } from 'react-router-dom'
 import "./ChattingWindow.scss";
+import {Howl} from 'howler'
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import Picker from 'emoji-picker-react';
 import Button from '@restart/ui/esm/Button'
 import profileAPI from '../../api/profileAPI'
 import { SocketContext } from '../../communicate/socket'
 import messageAPI from '../../api/messageAPI'
-import axiosClient from '../../api/axiosClient'
 import Videocam from '@material-ui/icons/Videocam'
 import CloseIcon from '@material-ui/icons/Close';
 import { useNavigate } from 'react-router'
 import { useUserID } from '../../hooks/auth'
+import * as Chance from 'chance';
+import useProfile from '../../hooks/profile'
+import ringtone from '../../Sounds/ringtone.mp3'
+const chance = new Chance();
+
+const ringtoneSound = new Howl({
+    src: [ringtone],
+    loop: true,
+    preload: true
+  })
 const LoadingSpinner = (props) => (
     <div className={`infinite-load ${props.isShow? '': 'notShow'}`}>
             <p>Loading...</p>
@@ -41,6 +51,7 @@ function ChattingWindow(props) {
     const socket = useContext(SocketContext);
     const { target_id } = useParams();
     const [userId, setUserId] = useUserID();
+    const [profile, setProfile] = useProfile();
     const navigate = useNavigate()
     const scrollHandler = (event) => {
         // if (messageBox.current.scrollTop + messageBox.current.clientHeight + margin  >= messageBox.current.scrollHeight) {
@@ -76,22 +87,36 @@ function ChattingWindow(props) {
         }
     }, [target_id]);
     
+    const onCallHandle = (data) => {
+        ringtoneSound.play();
+        const accepted = window.confirm(`${data.fullName} is calling you...! Accept?`);
+        if(accepted){
+            window.open(`http://localhost:3000/dating/room/${data.roomId}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
+        }
+        ringtoneSound.stop();
+    }
     useEffect(() => {
         if(socket.connected && userId){
+            console.log("Emit add user")
             socket.emit("addUser", {
-                'userId': userId
+            'userId': userId
             });
             socket.on("newMessage", handleNewMessage);
+            socket.on("call-request", onCallHandle)
         }
-        
         return () => {
             socket.off("newMessage", handleNewMessage);
         }
-    }, [socket, userId]);
+    }, [socket.connected, userId]);
     
-    // TODO: Alert callee, add pointer cursor call icon, 
     const handleCall = () => {
-        window.open(`http://localhost:3000/dating/call/${target_id}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
+        const id = chance.guid();
+        socket.emit("call-request", {
+            fullName: profile.fullName,
+            roomId: id,
+            toUID: target_id
+        })
+        window.open(`http://localhost:3000/dating/room/${id}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
     }
 
     const handleNewMessage = (arrivalMessage) => {
@@ -156,9 +181,11 @@ function ChattingWindow(props) {
         console.log("send message: ", message)
         try {
           const res = await messageAPI.create(message);
-          setMessages([...messages, res]);
           setTypingMessage("");
         } catch (err) {
+            if(err.response.status == 401){
+                navigate('/')
+            }
           console.log(err);
         }
     };
@@ -174,9 +201,6 @@ function ChattingWindow(props) {
         }
     }, [])
     
-    useEffect(() => {
-      console.log("Update messages: ", messages)
-    }, [messages]);
     
     return (
         <Container className="chatting" fluid={true}>

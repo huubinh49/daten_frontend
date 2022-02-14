@@ -19,9 +19,8 @@ const ProfileDeck = (props) => {
             }
         ).catch(error => {
             if(error.response.status == 401){
-               // TODO: Handle error when dont have profile
+                navigate("/")
                console.log(error.response);
-               navigate("/")
             }
         });
         

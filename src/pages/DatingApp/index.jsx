@@ -49,7 +49,7 @@ export default function DatingApp(props) {
                             } path="/profile/edit" key="/profile/edit" />;
                             <Route exact ={true} element = {
                                     <CallWindow />
-                            } path="/call/:target_id" key="/call/:target_id" />;
+                            } path="/room/:roomId" key="/room/:roomId" />;
                             <Route exact ={true} element = {
                                 <React.Suspense fallback = {"loading..."}>
                                     <ProfileDeck />

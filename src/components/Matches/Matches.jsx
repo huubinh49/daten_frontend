@@ -53,7 +53,7 @@ function Matches(props) {
                 ]
             ))
         }catch(error){
-            if(error.response.status === 403)
+            if(error.response.status === 401)
             navigate('/');
         }
         
@@ -78,16 +78,25 @@ function Matches(props) {
         }
         matchRef.current.addEventListener("scroll",scrollHandler );
         loadMore();
-        
-        socket.on("newMatch", handleNewMatch);
         return () => {
             if(matchRef.current)
             matchRef.current.removeEventListener("scroll", scrollHandler)
-
-            socket.off("newMatch", handleNewMatch);
         }
        
     }, [])
+    useEffect(() => {
+        if(socket.connected){
+            socket.emit("addUser", {
+                'userId': userId
+                });
+            console.log("Reconnect: Add event new match")
+            socket.on("newMatch", handleNewMatch);
+        }
+        return () => {
+            socket.off("newMatch", handleNewMatch);
+        }
+    }, [socket.connected])
+    
     return(
         <div className="matches" ref={matchRef} style={{
             overflowY: "scroll"

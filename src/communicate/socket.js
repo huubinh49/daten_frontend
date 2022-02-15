@@ -1,6 +1,6 @@
 import React from "react";
 const io = require('socket.io-client')
-console.log('1');
+
 
 // Connect to server
 const socket = io.connect("localhost:5000", {
@@ -12,8 +12,6 @@ const socket = io.connect("localhost:5000", {
     rejectUnauthorized: false,
     reconnectionAttempts: 10
 });
-
-console.log('2');
 
 // Add a connect listener
 socket.on('connect', function(socket) { 

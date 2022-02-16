@@ -25,7 +25,6 @@ const HomePage = (props) => {
                 return;
             }
             const res = await profileAPI.get(user_id);
-            console.log('check already have profile: ', res)
             setProfile(res.profile)
             if(res.profile != null){
                 navigate("/dating")

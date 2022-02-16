@@ -38,9 +38,10 @@ const ProfileDeck = (props) => {
             width: "100%"
         }}>
             <Row className="card-deck">
-                <Col lg={4} md = {12} style = {{
+                <Col xl={5} lg={8} md = {12} style = {{
                     position: "relative",
-                    height: "100%"
+                    height: "100%",
+                    maxWidth: "400px"
                 }}>
                     {
                     profiles.map(

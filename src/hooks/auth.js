@@ -8,7 +8,6 @@ export function useAuth() {
   const [isAuthenticated, setAuthenticated]  = useState(token !== null)
 
   useEffect(() => {
-    console.log('User auth: ', token)
     if(!token)
     dispatch(authActions.checkAuthentication())
     if (token)

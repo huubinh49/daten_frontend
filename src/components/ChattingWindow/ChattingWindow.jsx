@@ -47,6 +47,7 @@ function ChattingWindow(props) {
     const { target_id } = useParams();
     const [userId, setUserId] = useUserID();
     const [profile, setProfile] = useProfile();
+    const id = useRef('')
     const navigate = useNavigate()
     const scrollHandler = (event) => {
         // if (messageBox.current.scrollTop + messageBox.current.clientHeight + margin  >= messageBox.current.scrollHeight) {
@@ -57,7 +58,6 @@ function ChattingWindow(props) {
             infiniteLoadMessage();
         }
     }
-    const id = useRef('')
 
     const initialize = async () => {
         const target_user = await profileAPI.get(target_id);
@@ -71,7 +71,6 @@ function ChattingWindow(props) {
         const domNode = messageBox.current;
         if (domNode && firstLoad == true) {
             domNode.scrollTop = domNode.scrollHeight;
-            console.log("scroll to bottom ---------------------")
             setFirstLoad(false);
         }
     }, []);
@@ -86,7 +85,6 @@ function ChattingWindow(props) {
 
     useEffect(() => {
         if (socket.connected && userId) {
-            console.log("Emit add user")
             socket.emit("addUser", {
                 'userId': userId
             });
@@ -103,7 +101,7 @@ function ChattingWindow(props) {
 
     const handleAcceptCall = () => {
         setCalling(false);
-        window.open(`http://localhost:3000/dating/room/${id.current}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
+        window.open(`http://localhost:3000/room/${id.current}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
     }
     const handleRejectCall = () => {
         setCalling(false);
@@ -112,7 +110,7 @@ function ChattingWindow(props) {
         id.current = chance.guid();
         socket.emit("call-request", {
             fullName: profile.fullName,
-            roomId: id,
+            roomId: id.current,
             fromUID: profile.userId, 
             toUID: target_id
         })
@@ -121,14 +119,12 @@ function ChattingWindow(props) {
 
     const handleNewMessage = (arrivalMessage) => {
         const ids = [userId, target_id]
-        console.log("New messsage: ", arrivalMessage)
         if (arrivalMessage && ids.indexOf(arrivalMessage.senderId) !== -1 && ids.indexOf(arrivalMessage.recipientId) !== -1)
             setMessages((prev) => [...prev, arrivalMessage]);
     };
 
     const infiniteLoadMessage = useCallback(() => {
         setInfiniteLoading(true);
-        console.log("Infinite loading!")
         messageAPI.get(target_id, currentMessagePage.current)
             .then(res => {
                 console.log("Message: ", res)
@@ -178,7 +174,6 @@ function ChattingWindow(props) {
             recipientId: target_id,
             messageBody: typingMessage
         };
-        console.log("send message: ", message)
         try {
             const res = await messageAPI.create(message);
             setTypingMessage("");

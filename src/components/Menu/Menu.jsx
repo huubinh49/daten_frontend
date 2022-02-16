@@ -44,29 +44,25 @@ function Menu(props) {
             }
 
         }
+
+
+        socket.emit("addUser", {
+            'userId': userId
+        });
+        socket.on("call-request", onCallHandle)
+        socket.on("cancel-call", onCancelCallHandle)
+        
         initializeState();
-    }, []);
-    useEffect(() => {
-        if (socket.connected && userId) {
-            socket.emit("addUser", {
-                'userId': userId
-            });
-            console.log("Reconnect add event call-request")
-            socket.on("call-request", onCallHandle)
-            socket.on("cancel-call", onCancelCallHandle)
-        }
-        // TODO: still unmount & not listen event after the first call
-        return () => {
-            console.log("UNMOUNT dating app ------------------")
+        return () =>{
             socket.off("call-request", onCallHandle)
             socket.off("cancel-call", onCancelCallHandle)
         }
-    }, [socket.connected, userId])
+    }, []);
     function acceptCall() {
         ringtoneSound.stop();
         setReceivingCall(false);
         socket.emit('accepted', { toUID: caller.fromUID })
-        window.open(`http://localhost:3000/dating/room/${caller.roomId}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
+        window.open(`http://localhost:3000/room/${caller.roomId}`, 'Video Call', 'width=500,height=500,toolbar=1,resizable=1');
     }
     function rejectCall() {
         ringtoneSound.stop();
@@ -89,13 +85,11 @@ function Menu(props) {
         <aside className="menu">
             {
                 receivingCall &&
-                <div className="incomingCallContainer">
-                    <div className="incomingCall flex flex-column">
-                        <div><span className="callerID">{caller.fullName}</span> is calling you!</div>
-                        <div className="incomingCallButtons flex">
-                            <Button name="accept" color="primary" variant="contained" onClick={() => acceptCall()}>Accept</Button>
-                            <Button name="reject" color="secondary" variant="contained" onClick={() => rejectCall()}>Reject</Button>
-                        </div>
+                <div className="incomingCallContainer  flex flex-column">
+                    <div><span className="callerID">{caller.fullName}</span> is calling you!</div>
+                    <div className="incomingCallButtons flex">
+                        <Button name="accept" color="primary" variant="contained" onClick={() => acceptCall()}>Accept</Button>
+                        <Button name="reject" color="secondary" variant="contained" onClick={() => rejectCall()}>Reject</Button>
                     </div>
                 </div>
             }
@@ -146,4 +140,4 @@ function Menu(props) {
 
     )
 };
-export default memo(Menu)
+export default Menu

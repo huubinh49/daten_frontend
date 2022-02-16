@@ -18,7 +18,6 @@ export const datingReducer = (state = initialState, action)=>{
         case actionTypes.UPDATE_PROFILE: {
             const newState = {...state};
             newState.profile = action.profile
-            console.log('request update: ', newState)
             return newState
         }
         default:

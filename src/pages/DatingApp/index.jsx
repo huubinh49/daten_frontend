@@ -9,8 +9,6 @@ import { ChattingContext, DeviceContext } from './DatingContext';
 import { useAuth, useUserID } from '../../hooks/auth';
 import Profile from '../../components/Profile/Profile';
 import ProfileEdit from '../../components/ProfileEdit/ProfileEdit';
-import CallWindow from '../../components/CallWindow/CallWindow';
-
 export default function DatingApp(props) {
     const [chatting, setChatting] = useState(false);
     const [viewingProfile, setViewingProfile] = useState(false);
@@ -52,9 +50,6 @@ export default function DatingApp(props) {
                                     <ProfileEdit />
                                 </React.Suspense>
                             } path="/profile/edit" key="/profile/edit" />;
-                            <Route exact={true} element={
-                                <CallWindow />
-                            } path="/room/:roomId" key="/room/:roomId" />;
                             <Route exact={true} element={
                                 <React.Suspense fallback={"loading..."}>
                                     <ProfileDeck />

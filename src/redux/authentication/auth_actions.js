@@ -7,7 +7,6 @@ export const authStart = ()=>{
     }
 }
 export const authSuccess = (token)=>{
-    console.log(decode(token))
     localStorage.setItem('user_id', decode(token).id)
     localStorage.setItem('access_token', token)
     return{
@@ -36,7 +35,6 @@ export const checkAuthentication = ()=>{
     return async dispatch =>{
         const access = localStorage.getItem("access_token") 
         const refresh = localStorage.getItem("refresh_token")
-        console.log("check authenticate: ", access, refresh)
         if(!access && !refresh){
             dispatch(authLogout());
         }else{

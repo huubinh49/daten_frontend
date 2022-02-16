@@ -13,6 +13,8 @@ import fullscreen from '../../Icons/fullscreen.svg'
 import minimize from '../../Icons/minimize.svg'
 import { Container, Row, Col } from 'react-bootstrap'
 import { DeviceContext } from '../../pages/DatingApp/DatingContext';
+import "./CallingPage.scss";
+
 const CallWindow = (props) => {
     const [profile, setProfile] = useProfile();
     const [peers, setPeers] = useState([]);
@@ -23,7 +25,7 @@ const CallWindow = (props) => {
     const socketRef = useRef();
     const refVideo = useRef();
     const peersRef = useRef([]);
-    const myPeer = useRef();
+    const containerRef = useRef();
     const roomId = useParams();
     const isMobileDevice = useContext(DeviceContext);
     useEffect(() => {
@@ -54,11 +56,6 @@ const CallWindow = (props) => {
                             socketRef.current.id,
                             stream
                         );
-
-                        if (user.userId == profile.userId) {
-                            myPeer.current = peer;
-                        }
-
                         peersRef.current.push({
                             peerId: user.socketId,
                             peer,
@@ -110,17 +107,8 @@ const CallWindow = (props) => {
                 });
             });
     }, []);
-    // TODO: Dont show screen & cant stop sharing
+    // TODO: Share screen feature
     function shareScreen() {
-        navigator.mediaDevices.getDisplayMedia({ cursor: true })
-            .then(screenStream => {
-                myPeer.current.replaceTrack(stream.getVideoTracks()[0], screenStream.getVideoTracks()[0], stream)
-                refVideo.current.srcObject = screenStream
-                screenStream.getTracks()[0].onended = () => {
-                    myPeer.current.replaceTrack(screenStream.getVideoTracks()[0], stream.getVideoTracks()[0], stream)
-                    refVideo.current.srcObject = stream
-                }
-            })
     }
 
     function createPeer(userToSignal, callerId, stream) {
@@ -176,72 +164,93 @@ const CallWindow = (props) => {
     }
 
     return (
-        <Container style={{ display: 'flex', flexWrap: 'wrap' }}>
-            <div className="my-video" style={{ display: 'flex', flexDirection: 'column' }}>
-                <video muted ref={refVideo} autoPlay playsInline />
-                <span>{profile.fullName}</span>
-            </div>
-            <Row>
+        <Container ref={containerRef} style={{
+            height: "100vh",
+            padding: "0",
+            margin: "0",
+            backgroundColor: "black"
+        }} fluid={true}>
+
+            <Row className="video__container" style={{
+                padding: "0",
+                margin: "0"
+            }}>
+                <div className="my-video" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span>{profile.fullName}</span>
+                    <video muted ref={refVideo} autoPlay playsInline />
+                </div>
+
                 {peers.map((peer, index) => {
                     return (
-                        <Col lg={6} md = {6} sm = {12}>
-                            <Video
-                                key={peersRef.current[index].peerId}
-                                peer={peer.peerObj}
-                                fullName={peersRef.current[index].fullName}
-                            />
-                        </Col>
+                        <Video
+                            key={peersRef.current[index].peerId}
+                            peer={peer.peerObj}
+                            fullName={peersRef.current[index].fullName}
+                        />
                     );
                 })}
             </Row>
-            
 
-            <Container className="controls__container">
-                <Row>
-                    <Col lg={2} md={2} sm={2}>
-                        {
-                            audioMuted ?
-                                <span className="controls__icon" onClick={() => toggleMuteAudio()}>
-                                    <img src={microphonestop} alt="Unmute audio" />
-                                </span>
-                                : <span className="controls__iconr" onClick={() => toggleMuteAudio()}>
-                                    <img src={microphone} alt="Mute audio" />
-                                </span>
-                        }
-                    </Col>
-                    <Col lg={2} md={2} sm={2}>
-                        {
-                            videoMuted ?
-                                <span className="controls__icon" onClick={() => toggleMuteVideo()}>
-                                    <img src={camerastop} alt="Resume video" />
-                                </span>
-                                : <span className="controls__icon" onClick={() => toggleMuteVideo()}>
-                                    <img src={camera} alt="Stop video" />
-                                </span>
-                        }
-                    </Col>
-                    {
-                        !isMobileDevice &&
-                        <Col lg={2} md={2} sm={2}>
-                            <span className="controls__icon" onClick={()=>shareScreen()}>
-                                <img src={share} alt="Share screen"/>
-                            </span>
-                        </Col>
-                    }
-                    <Col lg={2} md={2} sm={2}>
-                        {
-                            isFullScreen ?
-                                <span className="controls__icon" onClick={()=>{setFullScreen(false)}}>
-                                    <img src={minimize} alt="fullscreen"/>
-                                </span>
-                                : <span className="controls__icon" onClick={()=>{setFullScreen(true)}}>
-                                    <img src={fullscreen} alt="fullscreen"/>
-                                </span>
-                        }
-                    </Col>
-                </Row>
 
-            </Container>
+            <div className="controls__container" fluid>
+                {
+                    audioMuted ?
+                        <span className="controls__icon" onClick={() => toggleMuteAudio()}>
+                            <img src={microphonestop} alt="Unmute audio" />
+                        </span>
+                        : <span className="controls__icon" onClick={() => toggleMuteAudio()}>
+                            <img src={microphone} alt="Mute audio" />
+                        </span>
+                }
+                {
+                    videoMuted ?
+                        <span className="controls__icon" onClick={() => toggleMuteVideo()}>
+                            <img src={camerastop} alt="Resume video" />
+                        </span>
+                        : <span className="controls__icon" onClick={() => toggleMuteVideo()}>
+                            <img src={camera} alt="Stop video" />
+                        </span>
+                }
+                {/* {
+                    !isMobileDevice &&
+                    <span className="controls__icon" onClick={() => shareScreen()}>
+                        <img src={share} alt="Share screen" />
+                    </span>
+                } */}
+                {
+                    isFullScreen ?
+                        <span className="controls__icon" onClick={() => {
+                            setFullScreen(false)
+                            if (document.exitFullscreen) {
+                                document.exitFullscreen();
+                            }
+                            else if (document.mozCancelFullScreen) {
+                                document.mozCancelFullScreen();
+                            }
+                            else if (document.webkitCancelFullScreen) {
+                                document.webkitCancelFullScreen();
+                            }
+                            else if (document.msExitFullscreen) {
+                                document.msExitFullscreen();
+                            }
+                         
+                        }}>
+                            <img src={minimize} alt="fullscreen" />
+                        </span>
+                        : <span className="controls__icon" onClick={() => {
+                            setFullScreen(true)
+                            if (containerRef.current.requestFullscreen) {
+                                containerRef.current.requestFullscreen();
+                            } else if (containerRef.current.webkitRequestFullscreen) { /* Safari */
+                                containerRef.current.webkitRequestFullscreen();
+                            } else if (containerRef.current.msRequestFullscreen) { /* IE11 */
+                                containerRef.current.msRequestFullscreen();
+                            } 
+                        }}>
+                            <img src={fullscreen} alt="fullscreen" />
+                        </span>
+                }
+            </div>
         </Container>
     );
 };

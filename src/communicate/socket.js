@@ -26,7 +26,6 @@ socket.on('disconnect', () => {
 socket.on('error', (err) => {
     console.log('Socket Error: ', err);
 });
-console.log('3');
 const SocketContext = React.createContext({});
 export  {
     socket,

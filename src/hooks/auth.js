@@ -28,15 +28,20 @@ export function useUserID(){
   const dispatch = useDispatch();
   const [userId, setUserId] = useState(token? decode(token).id : null)
   useEffect(() => {
+    
     // check before get state.auth.token
     if (!token){
       dispatch(authActions.checkAuthentication())    
     }
+    
     if(token){
       setUserId(decode(token).id)
     }
   }, [])
 
+  useEffect(() => {
+    console.log("UserID changed: ", userId)
+  }, [userId])
   
   useEffect(() => {
     if(token)

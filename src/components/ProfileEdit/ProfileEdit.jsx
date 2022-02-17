@@ -9,7 +9,7 @@ import * as yup from "yup";
 import { Link } from 'react-router-dom';
 import Button from '@restart/ui/esm/Button';
 import useProfile from '../../hooks/profile';
-import { useUserID } from '../../hooks/auth';
+import { useAuth } from '../../hooks/auth';
   
 const schema = yup.object().shape({
     gender: yup.string()
@@ -31,6 +31,8 @@ const ProfileEdit = (props) => {
     const [message, setMessage] = useState('')
     const [profile, setProfile] = useProfile();
     const [showAlert, setShowAlert] = useState(false);
+
+    const [isAuthenticated, setAuthenticated] = useAuth();
     const navigate = useNavigate();
 
 
@@ -55,6 +57,9 @@ const ProfileEdit = (props) => {
     }, [profile])
     
     useEffect(() => {
+        if(!isAuthenticated){
+            navigate("/")
+        }
         const photosEle = [...document.getElementsByClassName("photo-label")];
         photosEle.forEach(ele =>{
             resizeObserver.current.observe(ele, {box: 'border-box'})

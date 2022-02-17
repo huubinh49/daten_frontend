@@ -84,7 +84,7 @@ function ChattingWindow(props) {
 
 
     useEffect(() => {
-        if (socket.connected && userId) {
+        if (socket.connected) {
             socket.emit("addUser", {
                 'userId': userId
             });

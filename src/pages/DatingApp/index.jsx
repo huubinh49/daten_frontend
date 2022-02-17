@@ -6,7 +6,7 @@ import ChattingWindow from '../../components/ChattingWindow/ChattingWindow';
 import { Routes, Route } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import { ChattingContext, DeviceContext } from './DatingContext';
-import { useAuth, useUserID } from '../../hooks/auth';
+import { useAuth } from '../../hooks/auth';
 import Profile from '../../components/Profile/Profile';
 import ProfileEdit from '../../components/ProfileEdit/ProfileEdit';
 export default function DatingApp(props) {
@@ -17,7 +17,7 @@ export default function DatingApp(props) {
     const [isAuthenticated, setAuthenticated] = useAuth();
     useEffect(() => {
         const access_token = localStorage.getItem('access_token');
-        if (!isAuthenticated || !access_token) {
+        if ( !isAuthenticated || !access_token) {
             window.alert("Not authentication")
             navigate("/");
         }

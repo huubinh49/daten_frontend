@@ -44,14 +44,12 @@ function Menu(props) {
             }
 
         }
-
-
+        // TODO: emit userId undefined
         socket.emit("addUser", {
             'userId': userId
         });
         socket.on("call-request", onCallHandle)
         socket.on("cancel-call", onCancelCallHandle)
-        
         initializeState();
         return () =>{
             socket.off("call-request", onCallHandle)

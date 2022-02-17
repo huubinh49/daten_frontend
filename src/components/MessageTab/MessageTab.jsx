@@ -57,6 +57,7 @@ const MessageTab = memo((props) => {
     const navigate = useNavigate();
     const loadMore = useCallback(async () => {
         try{
+            
             const res = await matchAPI.getAllChatted(userId)
             const newMessages = res.messages
             console.log("Get already chatted partners: ", res)
@@ -95,9 +96,10 @@ const MessageTab = memo((props) => {
     useEffect(() => {
         
         if(socket.connected){
+      
             socket.emit("addUser", {
                 'userId': userId
-                });
+            });
             console.log("Reconnect: Add event chatted partners")
             socket.on("newChattedPartner", handleNewChattedPartner)
         }

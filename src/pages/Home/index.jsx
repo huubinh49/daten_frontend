@@ -20,10 +20,10 @@ const HomePage = (props) => {
     const closeLoginModal = () => setLoginModalShow(false);
     const checkAlreadyHaveProfile = async (user_id) => {
         try {
-            if(userId && profile && profile !== 'undefined' && Object.keys(profile).length){
-                navigate("/dating");
-                return;
-            }
+            // if(userId && profile && profile !== 'undefined' && Object.keys(profile).length){
+            //     navigate("/dating");
+            //     return;
+            // }
             const res = await profileAPI.get(user_id);
             setProfile(res.profile)
             if(res.profile != null){
@@ -36,6 +36,7 @@ const HomePage = (props) => {
         }   
     }
     const openLoginModal = () => {
+        // TODO: user is deleted -> isAuthenticated  & userId still exist
         if(isAuthenticated && userId){
             checkAlreadyHaveProfile(userId)
         }

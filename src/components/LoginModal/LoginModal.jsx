@@ -36,7 +36,7 @@ function LoginModal(props) {
                         localStorage.setItem("profile", JSON.stringify(res.profile));
                         navigate("/dating")
                     }else{
-                        navigate("/profile")                    
+                        navigate("/create-profile")                    
                     }
                 } catch (error) {
                     console.log(error)

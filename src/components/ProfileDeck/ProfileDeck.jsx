@@ -2,13 +2,14 @@ import React, { memo, useCallback, useEffect, useState } from 'react'
 import { Col, Container, Row } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
 import evaluateAPI from '../../api/evaluateAPI';
+import { useAuth } from '../../hooks/auth';
 import ProfileCard from '../ProfileCard/ProfileCard'
 import "./ProfileDeck.scss";
 const ProfileDeck = (props) => {
     // get matched partner of user profile from cached
     const [profiles, setProfiles] = useState([])
     const navigate = useNavigate();
-    
+    const [isAuthenticated, setAuthenticated] = useAuth();
     const loadMore = () => {
         evaluateAPI.get().then(
             res =>{
@@ -19,6 +20,7 @@ const ProfileDeck = (props) => {
             }
         ).catch(error => {
             if(error.response.status == 401){
+                setAuthenticated(false);
                 navigate("/")
                console.log(error.response);
             }

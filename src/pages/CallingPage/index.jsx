@@ -47,6 +47,7 @@ const CallWindow = (props) => {
                 socketRef.current.emit('join-room', roomId, profile);
 
                 socketRef.current.on('users-present-in-room', (users) => {
+                    console.log("users-present-in-room: ", users)
                     const peers = [];
 
                     // To all users who are already in the room initiating a peer connection
@@ -109,6 +110,26 @@ const CallWindow = (props) => {
     }, []);
     // TODO: Share screen feature
     function shareScreen() {
+        navigator.mediaDevices.getDisplayMedia({ cursor: true })
+            .then(screenStream => {
+                peers.forEach((peer, idx) => {
+                    peer.peerObj.replaceTrack(stream.getVideoTracks()[0], screenStream.getVideoTracks()[0], stream)
+                })
+
+                screenStream.getTracks()[0].onended = () => {
+                    console.log("Stop sharing onended")
+                    peers.forEach((peer, idx) => {
+                        peer.peerObj.replaceTrack(screenStream.getVideoTracks()[0], stream.getVideoTracks()[0], stream)
+                    })
+                }
+
+                screenStream.getTracks()[0].oninactive = () => {
+                    console.log("Stop sharing oninactive")
+                    peers.forEach((peer, idx) => {
+                        peer.peerObj.replaceTrack(screenStream.getVideoTracks()[0], stream.getVideoTracks()[0], stream)
+                    })
+                }
+            })
     }
 
     function createPeer(userToSignal, callerId, stream) {
@@ -176,7 +197,7 @@ const CallWindow = (props) => {
                 margin: "0"
             }}>
                 <div className="my-video" style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span>{profile.fullName}</span>
+                    {videoMuted && <span className = "fullName">{profile.fullName}</span>}
                     <video muted ref={refVideo} autoPlay playsInline />
                 </div>
 
@@ -211,12 +232,12 @@ const CallWindow = (props) => {
                             <img src={camera} alt="Stop video" />
                         </span>
                 }
-                {/* {
+                {
                     !isMobileDevice &&
                     <span className="controls__icon" onClick={() => shareScreen()}>
                         <img src={share} alt="Share screen" />
                     </span>
-                } */}
+                }
                 {
                     isFullScreen ?
                         <span className="controls__icon" onClick={() => {
@@ -233,7 +254,7 @@ const CallWindow = (props) => {
                             else if (document.msExitFullscreen) {
                                 document.msExitFullscreen();
                             }
-                         
+
                         }}>
                             <img src={minimize} alt="fullscreen" />
                         </span>
@@ -245,11 +266,12 @@ const CallWindow = (props) => {
                                 containerRef.current.webkitRequestFullscreen();
                             } else if (containerRef.current.msRequestFullscreen) { /* IE11 */
                                 containerRef.current.msRequestFullscreen();
-                            } 
+                            }
                         }}>
                             <img src={fullscreen} alt="fullscreen" />
                         </span>
                 }
+                {/* TODO: Create end call button */}
             </div>
         </Container>
     );

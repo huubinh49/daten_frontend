@@ -63,7 +63,7 @@ function LoginForm(props) {
             formData.append('email', formikProps.values['email'])
             formData.append('password', formikProps.values['password'])
             dispatch(authActions.authLogin(formData, () => {
-                navigate("/profile")
+                navigate("/create-profile")
             }, (err)=>{
                 try{
                     handleShowAlert(err.response.data.error) 

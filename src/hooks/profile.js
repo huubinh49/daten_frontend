@@ -11,7 +11,7 @@ export default function useProfile() {
       try{
         if(userId && (!profile || profile == 'undefined' || !Object.keys(profile).length)){
           const res = await profileAPI.get(userId);
-          setProfile(res.profile);
+          setProfile(res.profile || {});
         }
       }catch(error){
         console.log(error)

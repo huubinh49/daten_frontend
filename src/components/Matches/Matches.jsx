@@ -8,8 +8,8 @@ import { SocketContext } from '../../communicate/socket';
 import { useUserID } from '../../hooks/auth';
 import { useNavigate } from 'react-router';
 const MatchCard = memo((props) => {
-    return(
-        
+    return (
+
         <div style={{
             width: "100%",
             height: "140px",
@@ -28,7 +28,7 @@ const MatchCard = memo((props) => {
                 color: "white"
             }}>{props.fullName}</span>
         </div>
-        
+
     )
 })
 
@@ -40,24 +40,24 @@ function Matches(props) {
     const [userId, setUserId] = useUserID();
     const navigate = useNavigate();
     // get more user already matched
-    const loadMore = async ()  => {
-        try{
+    const loadMore = async () => {
+        try {
             const res = await matchAPI.getAll(userId)
             const newProfiles = res.matches
-            setProfiles(prevProfiles =>(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+            setProfiles(prevProfiles => (
                 [
                     ...prevProfiles,
-                    ...newProfiles    
+                    ...newProfiles
                 ]
             ))
-        }catch(error){
-            if(error.response.status === 401)
-            navigate('/');
+        } catch (error) {
+            if (error.response.status === 401)
+                navigate('/');
         }
-        
+
     };
     const handleNewMatch = (matcher) => {
-        setProfiles(prevProfiles =>(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+        setProfiles(prevProfiles => (
             [
                 matcher,
                 ...prevProfiles
@@ -65,35 +65,31 @@ function Matches(props) {
         ))
     }
     useEffect(() => {
-        const margin = 1; 
+        const margin = 1;
         const scrollHandler = (event) => {
             if (
-              matchRef.current.scrollTop + matchRef.current.clientHeight + margin  >= matchRef.current.scrollHeight
+                matchRef.current.scrollTop + matchRef.current.clientHeight + margin >= matchRef.current.scrollHeight
             ) {
-              loadMore();
+                loadMore();
             }
         }
-        matchRef.current.addEventListener("scroll",scrollHandler );
+        matchRef.current.addEventListener("scroll", scrollHandler);
         loadMore();
+     
+        socket.emit("addUser", {
+            'userId': userId
+        });
+        socket.on("newMatch", handleNewMatch);
+
         return () => {
-            if(matchRef.current)
-            matchRef.current.removeEventListener("scroll", scrollHandler)
-        }
-       
-    }, [])
-    useEffect(() => {
-        if(socket.connected){
-            socket.emit("addUser", {
-                'userId': userId
-                });
-            socket.on("newMatch", handleNewMatch);
-        }
-        return () => {
+            if (matchRef.current)
+                matchRef.current.removeEventListener("scroll", scrollHandler)
             socket.off("newMatch", handleNewMatch);
         }
-    }, [socket.connected])
-    
-    return(
+
+    }, [])
+
+    return (
         <div className="matches" ref={matchRef} style={{
             overflowY: "scroll"
         }}>

@@ -4,7 +4,7 @@ import "./Profile.scss"
 import profileAPI from '../../api/profileAPI';
 import { Link } from 'react-router-dom';
 import useProfile from '../../hooks/profile';
-import { useUserID } from '../../hooks/auth';
+import { useAuth, useUserID } from '../../hooks/auth';
 import {useNavigate} from 'react-router-dom'; 
 
 const currentYear = new Date().getFullYear()
@@ -14,6 +14,7 @@ const Profile = (props) => {
     const [currentImg, setCurrentImg] = useState(0);
     const [profile, setProfile] = useProfile();
     const [userId, useUserId] = useUserID();
+    const [isAuthenticated, setAuthenticated] = useAuth();
     const navigate = useNavigate()
     useEffect(async () => {
         try{
@@ -23,7 +24,7 @@ const Profile = (props) => {
             }
         }catch(error){
             if(error.response.status == 401){
-                // TODO: fix call api fail but not navigate to / & not log error
+                setAuthenticated(false);
                 navigate("/")
             }
             console.log(error);

@@ -9,8 +9,8 @@ import { useUserID } from '../../hooks/auth';
 import { useNavigate } from 'react-router';
 
 const Avatar = memo((props) => (
-    <div className= "card-avatar" style={{
-        backgroundImage: (props.is_private)? '':`url('${props.img_url}')` ,
+    <div className="card-avatar" style={{
+        backgroundImage: (props.is_private) ? '' : `url('${props.img_url}')`,
         backgroundColor: "#000000",
         backgroundPosition: '50% 50%',
         backgroundRepeat: "no-repeat",
@@ -22,30 +22,30 @@ const Avatar = memo((props) => (
     }} />
 ))
 
-const MessageTile = memo((props) =>{
-    return(
-            <div className="card" style={{
+const MessageTile = memo((props) => {
+    return (
+        <div className="card" style={{
+            display: "flex",
+            flexFlow: "row",
+            padding: "10px 0px"
+        }}>
+            <Avatar is_private={props.is_private} img_url={props.photos[0]} style={{
+                width: "50px",
+                height: "50px",
+                margin: "0px 20px"
+            }} />
+
+            <div className="card-content" style={{
                 display: "flex",
-                flexFlow: "row",
-                padding: "10px 0px"
+                height: "100%",
+                flexFlow: "column",
+                justifyContent: "center"
+
             }}>
-                <Avatar is_private={props.is_private} img_url={props.photos[0]} style={{
-                    width:"50px",
-                    height:"50px",
-                    margin: "0px 20px"
-                }}/>
-
-                <div className="card-content" style={{
-                    display: "flex",
-                    height: "100%",
-                    flexFlow: "column",
-                    justifyContent: "center"
-
-                }}>
-                    <span className="card-name" style={{fontSize: "1em"}}>{props.fullName}</span>
-                    <span className="card-message" style={{fontSize: "0.8em", color: "gray"}}>{props.newestMessage}</span>
-                </div>
+                <span className="card-name" style={{ fontSize: "1em" }}>{props.fullName}</span>
+                <span className="card-message" style={{ fontSize: "0.8em", color: "gray" }}>{props.newestMessage}</span>
             </div>
+        </div>
     )
 })
 const MessageTab = memo((props) => {
@@ -53,88 +53,90 @@ const MessageTab = memo((props) => {
     const messageRef = useRef(null);
     const [chatting, setChatting] = useContext(ChattingContext);
     const socket = useContext(SocketContext)
-    const [userId, useUserId] = useUserID();
+    const [userId, setUserId] = useUserID();
     const navigate = useNavigate();
     const loadMore = useCallback(async () => {
-        try{
-            
-            const res = await matchAPI.getAllChatted(userId)
+        try {
+            let res = null
+            if (props.is_private) {
+                res = await matchAPI.getAllPrivatelyChatted(userId)
+            }
+            else {
+                res = await matchAPI.getAllChatted(userId)
+            }
             const newMessages = res.messages
-            console.log("Get already chatted partners: ", res)
-            setMessages(prevMessages =>(
+            setMessages(prevMessages => (
                 [
                     ...prevMessages,
-                    ...newMessages    
+                    ...newMessages
                 ]
             ))
-        }catch(error){
-            if(error.response.status === 401)
-            navigate('/');
+        } catch (error) {
+            if (error.response.status === 401)
+                navigate('/');
             console.log(error)
         }
-            
+
     }, []);
-   
+
 
     const scrollHandler = (event) => {
         if (
-          messageRef.current.scrollTop + messageRef.current.clientHeight + 1  >= messageRef.current.scrollHeight
+            messageRef.current.scrollTop + messageRef.current.clientHeight + 1 >= messageRef.current.scrollHeight
         ) {
-          loadMore();
+            loadMore();
         }
     }
-    
+
     useEffect(() => {
         messageRef.current.addEventListener("scroll", scrollHandler);
         loadMore();
         return () => {
-            if(messageRef.current)
-                messageRef.current.removeEventListener("scroll",scrollHandler);
+            if (messageRef.current)
+                messageRef.current.removeEventListener("scroll", scrollHandler);
         }
     }, [])
 
     useEffect(() => {
-        
-        if(socket.connected){
-      
+        if (socket.connected) {
             socket.emit("addUser", {
                 'userId': userId
             });
-            console.log("Reconnect: Add event chatted partners")
+            console.log("Add event chatted partners")
             socket.on("newChattedPartner", handleNewChattedPartner)
         }
         return () => {
             socket.off("newChattedPartner", handleNewChattedPartner)
         }
     }, [socket.connected])
-    
+
     const handleNewChattedPartner = (newChattedPartner) => {
         setMessages((prevMessages) => {
             const newMessages = [...prevMessages];
             let isNewPartner = true;
-            for(let idx in newMessages){
-                if(newChattedPartner.userId == newMessages[idx].userId){
+            for (let idx in newMessages) {
+                if (newChattedPartner.userId === newMessages[idx].userId) {
                     newMessages[idx] = newChattedPartner;
                     isNewPartner = false;
                 }
             }
-            if(isNewPartner){
+            if (isNewPartner) {
                 newMessages.push(newChattedPartner)
             }
             return newMessages;
         })
     }
-    return(
+    return (
         <div className="message" ref={messageRef} style={{
             overflowY: "scroll"
         }}>
             <Container>
                 <Row >
-                    {messages.map((message, idx) => <Col sm={12} style={{padding: "0px"}}>
-                        <Link to={`/dating/messages/${message.userId}`} onClick={() => {
+                    {messages.map((message, idx) => <Col sm={12} style={{ padding: "0px" }}>
+                        <Link key={idx} to={`/dating/messages/${message.userId}`} onClick={() => {
                             setChatting(true)
                         }} >
-                            <MessageTile {...message} key ={idx} is_private = {props.is_private}/>
+                            <MessageTile {...message} is_private={props.is_private} />
                         </Link>
                     </Col>)}
                 </Row>
@@ -143,4 +145,4 @@ const MessageTab = memo((props) => {
     )
 });
 
-export {Avatar, MessageTab}
+export { Avatar, MessageTab }

@@ -18,7 +18,7 @@ export default function DatingApp(props) {
     useEffect(() => {
         const access_token = localStorage.getItem('access_token');
         if ( !isAuthenticated || !access_token) {
-            window.alert("Not authentication")
+    
             navigate("/");
         }
     }, [])

@@ -1,10 +1,8 @@
 import React, { memo, useContext, useRef, useEffect, useState, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import { ButtonGroup, Card, Col, Container, Row } from 'react-bootstrap'
 import { Avatar } from '../MessageTab/MessageTab'
 import { Link, useParams } from 'react-router-dom'
 import "./ChattingWindow.scss";
-import { Howl } from 'howler'
 import { ChattingContext } from '../../pages/DatingApp/DatingContext';
 import Picker from 'emoji-picker-react';
 import Button from '@restart/ui/esm/Button'
@@ -18,6 +16,7 @@ import { useUserID } from '../../hooks/auth'
 import * as Chance from 'chance';
 import useProfile from '../../hooks/profile'
 import CallingModal from './CallingModal';
+import matchAPI from '../../api/matchAPI';
 
 const chance = new Chance();
 const LoadingSpinner = (props) => (
@@ -38,6 +37,7 @@ function ChattingWindow(props) {
     const [choosingEmoji, setChoosingEmoji] = useState(false);
     const [currentImg, setCurrentImg] = useState(0);
     const [targetUser, setTargetUser] = useState({});
+    const [match, setMatch] = useState({});
     const currentMessagePage = useRef(0);
     const [messages, setMessages] = useState([]);
     const messageBox = useRef(null);
@@ -60,16 +60,26 @@ function ChattingWindow(props) {
     }
 
     const initialize = async () => {
+        try{
         const target_user = await profileAPI.get(target_id);
-        setTargetUser(() => target_user.profile);
-        const margin = 1;
+        const match_info = await matchAPI.get(target_id);
+        if(match_info.match){
+            match_info.match.createdAt = new Date(match_info.match.createdAt).toLocaleDateString()
+            setMatch(match_info.match)
+        }
+        if(target_user.profile){
+            setTargetUser(target_user.profile);
+        }
         currentMessagePage.current = 0;
         messageBox.current && messageBox.current.addEventListener("scroll", scrollHandler);
         infiniteLoadMessage();
+        }catch(error){
+            console.log(error)
+        }
     }
     const scrollToBottom = useCallback(() => {
         const domNode = messageBox.current;
-        if (domNode && firstLoad == true) {
+        if (domNode && firstLoad) {
             domNode.scrollTop = domNode.scrollHeight;
             setFirstLoad(false);
         }
@@ -85,19 +95,20 @@ function ChattingWindow(props) {
 
     useEffect(() => {
         if (socket.connected) {
+            console.log("Add event new message")
             socket.emit("addUser", {
                 'userId': userId
             });
             socket.on("newMessage", handleNewMessage);
             socket.on("accepted", handleAcceptCall)
-            socket.off("rejected", handleRejectCall)
+            socket.on("rejected", handleRejectCall)
         }
         return () => {
             socket.off("accepted", handleAcceptCall)
             socket.off("rejected", handleRejectCall)
             socket.off("newMessage", handleNewMessage);
         }
-    }, [socket.connected, userId]);
+    }, [socket.connected]);
 
     const handleAcceptCall = () => {
         setCalling(false);
@@ -129,7 +140,7 @@ function ChattingWindow(props) {
             .then(res => {
                 console.log("Message: ", res)
                 if (res.messages) {
-                    if (currentMessagePage.current == 0) {
+                    if (currentMessagePage.current === 0) {
                         console.log('Get new message: ', res.messages.length)
                         setMessages(() => [...res.messages])
                         setTimeout(() => {
@@ -147,7 +158,7 @@ function ChattingWindow(props) {
             })
             .catch(err => {
                 console.log(err)
-                if (err.response.status == 401) { // Unauthorized
+                if (err.response.status === 401) { // Unauthorized
                     navigate('/')
                 }
                 setTimeout(() => {
@@ -178,7 +189,7 @@ function ChattingWindow(props) {
             const res = await messageAPI.create(message);
             setTypingMessage("");
         } catch (err) {
-            if (err.response.status == 401) {
+            if (err.response.status === 401) {
                 navigate('/')
             }
             console.log(err);
@@ -186,17 +197,15 @@ function ChattingWindow(props) {
     };
 
 
-    const handleCardClick = useCallback((event) => {
-
+    const handleCardClick = (event) => {
         const rect = event.target.getBoundingClientRect()
         const direction = (event.clientX - rect.left - rect.width / 2) > 0 ? 1 : -1;
         const newIdx = currentImg + direction;
-        if (newIdx >= 0 && newIdx < targetUser.photos?.length) {
+        if (newIdx >= 0 && targetUser.photos && newIdx < targetUser.photos.length) {
             setCurrentImg(newIdx);
         }
-    }, [])
-
-
+    }
+    
     const handleCancelCall = () => {
         setCalling(false);
         socket.emit("cancel-call", {
@@ -216,7 +225,7 @@ function ChattingWindow(props) {
                                 height: "50px",
                                 border: "5px solid white"
                             }} />
-                            <h3>{`You matched with ${targetUser.fullName} on 12/21/2021`}</h3>
+                            <h3>{`You matched with ${targetUser.fullName} on ${match.createdAt}`}</h3>
                         </div>
                         <Videocam style={{
                             cursor: 'pointer',
@@ -234,7 +243,7 @@ function ChattingWindow(props) {
                         <LoadingSpinner isShow={infiniteLoading} />
                         {
                             messages.map((message, idx) => (
-                                <Message key={idx} content={message.messageBody} isMine={message.senderId == userId} />
+                                <Message key={idx} content={message.messageBody} isMine={message.senderId === userId} />
                             ))
                         }
                     </div>

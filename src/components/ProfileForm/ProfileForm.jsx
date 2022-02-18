@@ -252,11 +252,11 @@ function ProfileForm() {
                                     <Row>
                                         {
                                             photos.map((item, idx) => (
-                                                <Col lg={4} md={6} sm={12}>
+                                                <Col  key = {idx} lg={4} md={6} sm={12}>
                                                     <Form.Group
                                                         controlId={`file-${idx}`}
                                                         className="profile-photo"
-                                                        key = {idx}
+                                                       
                                                     >
                                                         <Form.Label className="photo-label" style={{
                                                             backgroundImage: photosUrl[idx] ? `url('${photosUrl[idx]}')` : "",

@@ -44,18 +44,25 @@ function Menu(props) {
             }
 
         }
-        // TODO: emit userId undefined
-        socket.emit("addUser", {
-            'userId': userId
-        });
-        socket.on("call-request", onCallHandle)
-        socket.on("cancel-call", onCancelCallHandle)
         initializeState();
+    }, []);
+    useEffect(() => {
+        if(userId && socket.connected){
+            socket.emit("addUser", {
+                'userId': userId
+            });
+            console.log("Add event call request!");
+            
+            socket.on("call-request", onCallHandle)
+            socket.on("cancel-call", onCancelCallHandle)
+        }
+      
         return () =>{
             socket.off("call-request", onCallHandle)
             socket.off("cancel-call", onCancelCallHandle)
         }
-    }, []);
+    }, [socket.connected, userId])
+    
     function acceptCall() {
         ringtoneSound.stop();
         setReceivingCall(false);

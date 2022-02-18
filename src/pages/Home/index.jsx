@@ -20,10 +20,6 @@ const HomePage = (props) => {
     const closeLoginModal = () => setLoginModalShow(false);
     const checkAlreadyHaveProfile = async (user_id) => {
         try {
-            // if(userId && profile && profile !== 'undefined' && Object.keys(profile).length){
-            //     navigate("/dating");
-            //     return;
-            // }
             const res = await profileAPI.get(user_id);
             setProfile(res.profile)
             if(res.profile != null){
@@ -36,7 +32,6 @@ const HomePage = (props) => {
         }   
     }
     const openLoginModal = () => {
-        // TODO: user is deleted -> isAuthenticated  & userId still exist
         if(isAuthenticated && userId){
             checkAlreadyHaveProfile(userId)
         }
@@ -47,7 +42,6 @@ const HomePage = (props) => {
     };
    
     useEffect(() => {
-        
         if(userId && isAuthenticated){
             checkAlreadyHaveProfile(userId)
         }else{
@@ -150,10 +144,10 @@ const HomePage = (props) => {
                                     My Story
                                 </h2>
                                 <h4 className="content_subtitle">
-                                 How It All Started
+                                 What is motivation?
                                 </h4>
                                 <p className="content_description">
-                                    ​I have used many different dating apps for 3 years. None of them focus on the experience of you and your matcher after they matched. That is the motivation for me to create this dating web app, not only matching but also dating.
+                                    ​I have used many different dating apps for 3 years. None of them focus on the experience of you and your partner after matched. That is the motivation for me to create this dating web app, not only matching but also dating.
                                 </p>
                             </div>
                         </Col>

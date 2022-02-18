@@ -1,5 +1,5 @@
 import './App.scss';
-import {Routes, Route, BrowserRouter} from 'react-router-dom';
+import {Routes, Route} from 'react-router-dom';
 import React, { useEffect } from 'react'
 import routes from './pages/routes';
 import { useDispatch } from 'react-redux';

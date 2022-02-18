@@ -50,18 +50,6 @@ const ProfileCard = (props) => {
         setDirection(getDirection())
     }
 
-    const getVote = (childNode, parentNode) => {
-        const childRect = childNode.getBoundingClientRect()
-        const parentRect = parentNode.getBoundingClientRect()
-        let result =
-          parentRect.left >= childRect.right
-            ? false
-            : parentRect.right <= childRect.left
-            ? true
-            : undefined
-        return result
-      }
-    
     const flyAwayDistance = (direction) => {
         const parentWidth = cardElem.current.parentNode.getBoundingClientRect().width
         const childWidth = cardElem.current.getBoundingClientRect().width
@@ -76,7 +64,7 @@ const ProfileCard = (props) => {
             await animControls.start({
                 x: flyAwayDistance(direction)
             })
-            await handleResult(props.profile.userId, direction == 'right')
+            await handleResult(props.profile.userId, direction === 'right')
            
         }
     }

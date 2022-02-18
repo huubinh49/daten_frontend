@@ -1,9 +1,10 @@
 import React, { memo, useCallback, useEffect, useState } from 'react'
-import { Col, Container, Row } from 'react-bootstrap';
+import { Col, Container, Row, Image } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
 import evaluateAPI from '../../api/evaluateAPI';
 import { useAuth } from '../../hooks/auth';
 import ProfileCard from '../ProfileCard/ProfileCard'
+import logo from '../../logo.svg';
 import "./ProfileDeck.scss";
 const ProfileDeck = (props) => {
     // get matched partner of user profile from cached
@@ -50,6 +51,18 @@ const ProfileDeck = (props) => {
                                 (profile, idx) => <ProfileCard profile = {profile} key={idx} removeProfile = {removeProfile}/>
                         )
                     }    
+                    {
+                        !profiles.length &&
+                        <div className = "lackOfProfiles">
+                            <div className = "empty-icon">
+                                <Image src={logo} fluid style={{
+                                    width: "100px",
+                                    height: "100px"
+                                }} />
+                            </div>
+                            <p>You swiped all of others profile</p>
+                        </div>
+                    }
                 </Col>
             </Row>
         </Container>

@@ -247,7 +247,9 @@
         flex-flow: column;
         justify-content: flex-start;
         border-radius: inherit;
-        color: gray;
+        *{
+            color: black;
+        }
         .card-title{
             color: black;
             font-weight: bold;

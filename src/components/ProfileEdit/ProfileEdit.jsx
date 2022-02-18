@@ -6,10 +6,9 @@ import { useNavigate } from 'react-router';
 import profileAPI from '../../api/profileAPI';
 import { Formik } from 'formik';
 import * as yup from "yup";
-import { Link } from 'react-router-dom';
 import Button from '@restart/ui/esm/Button';
 import useProfile from '../../hooks/profile';
-import { useAuth } from '../../hooks/auth';
+import { useAuth, useUserID } from '../../hooks/auth';
   
 const schema = yup.object().shape({
     gender: yup.string()
@@ -31,7 +30,7 @@ const ProfileEdit = (props) => {
     const [message, setMessage] = useState('')
     const [profile, setProfile] = useProfile();
     const [showAlert, setShowAlert] = useState(false);
-
+    const [userId, setUserId] = useUserID()
     const [isAuthenticated, setAuthenticated] = useAuth();
     const navigate = useNavigate();
 
@@ -41,10 +40,15 @@ const ProfileEdit = (props) => {
             entry.target.style.height = `${entry.contentRect.width*1.3}px`
         })
     }))
-    useEffect(async () => {
-        if(!profile || profile == 'undefined' || !Object.keys(profile).length){
+    
+    useEffect(() => {
+        const initialize = async () => {
+            if(!profile || profile === 'undefined' || !Object.keys(profile).length){
+                const res = await profileAPI.get(userId);
+                setProfile(res.profile || {});
+            }
             try{
-        
+            
                 const existingPhotoUrls = photosUrl;
                 for(let idx in profile.photos){
                     existingPhotoUrls[idx] = profile.photos[idx]
@@ -54,7 +58,8 @@ const ProfileEdit = (props) => {
                 console.log(error);
             } 
         }
-    }, [profile])
+        initialize();
+    }, [])
     
     useEffect(() => {
         if(!isAuthenticated){
@@ -69,7 +74,7 @@ const ProfileEdit = (props) => {
                 resizeObserver.current.unobserve(ele)
             })   
         }
-    }, []);
+    }, [resizeObserver.current]);
     
     const handleSubmit = async (event, formikProps) => {
         event.preventDefault();
@@ -77,7 +82,7 @@ const ProfileEdit = (props) => {
 
         const formData = new FormData();
         photos.forEach((photo, idx) =>{
-            if(photosUrl[idx] && (idx >=  profile.photos.length || photosUrl[idx] != profile.photos[idx]))
+            if(photosUrl[idx] && (idx >=  profile.photos.length || photosUrl[idx] !== profile.photos[idx]))
             formData.append(`photo-${idx}`, photo)
         })
         // Append form data 
@@ -142,11 +147,11 @@ const ProfileEdit = (props) => {
                                 <Row>
                                 {
                                     photos.map((item, idx) => (
-                                        <Col lg={4} md={6} sm={12}>
+                                        <Col key = {idx} lg={4} md={6} sm={12}>
                                             <Form.Group
                                                 controlId={`file-${idx}`}
                                                 className="profile-photo"
-                                                key = {idx}
+                                                
                                             >
                                                 <Form.Label className="photo-label" style={{
                                                     backgroundImage: photosUrl[idx] ? `url('${photosUrl[idx]}')` : "",
@@ -278,7 +283,7 @@ const ProfileEdit = (props) => {
                                                             label="Boy"
                                                             name="interested"
                                                             type="radio"
-                                                            defaultChecked={formikProps.values.interested == "1"}
+                                                            defaultChecked={formikProps.values.interested === "1"}
                                                             id={`interested-boy`}
                                                         />
                                                         <Form.Check
@@ -287,7 +292,7 @@ const ProfileEdit = (props) => {
                                                             label="Girl"
                                                             name="interested"
                                                             type="radio"
-                                                            defaultChecked={formikProps.values.interested == "0"}
+                                                            defaultChecked={formikProps.values.interested === "0"}
                                                             id={`interested-girl`}
                                                         />
                                                         <Form.Check
@@ -296,7 +301,7 @@ const ProfileEdit = (props) => {
                                                             label="Other"
                                                             name="interested"
                                                             type="radio"
-                                                            defaultChecked={formikProps.values.interested == "-1"}
+                                                            defaultChecked={formikProps.values.interested === "-1"}
                                                             id={`interested-other`}
                                                         />
                                                     </div>

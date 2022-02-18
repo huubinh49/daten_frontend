@@ -64,41 +64,44 @@ function Matches(props) {
             ]
         ))
     }
-    useEffect(() => {
-        const margin = 1;
-        const scrollHandler = (event) => {
-            if (
-                matchRef.current.scrollTop + matchRef.current.clientHeight + margin >= matchRef.current.scrollHeight
-            ) {
-                loadMore();
-            }
+    const scrollHandler = (event) => {
+        if (
+            matchRef.current.scrollTop + matchRef.current.clientHeight + 1 >= matchRef.current.scrollHeight
+        ) {
+            loadMore();
         }
+    }
+    useEffect(() => {
         matchRef.current.addEventListener("scroll", scrollHandler);
         loadMore();
-     
-        socket.emit("addUser", {
-            'userId': userId
-        });
-        socket.on("newMatch", handleNewMatch);
+ 
 
+    }, [])
+    useEffect(() => {
+        if(socket.connected)  {
+            console.log("Add event new match")
+            socket.emit("addUser", {
+                'userId': userId
+            });
+            socket.on("newMatch", handleNewMatch);
+        }
         return () => {
             if (matchRef.current)
                 matchRef.current.removeEventListener("scroll", scrollHandler)
             socket.off("newMatch", handleNewMatch);
         }
-
-    }, [])
-
+    }, [socket.connected])
+    
     return (
         <div className="matches" ref={matchRef} style={{
             overflowY: "scroll"
         }}>
             <Container>
                 <Row >
-                    {profiles && profiles.map((profile, idx) => <Col style={{
+                    {profiles && profiles.map((profile, idx) => <Col  key={idx} style={{
                         padding: "8px"
                     }} md={6} lg={4}>
-                        <Link key={idx} to={`/dating/messages/${profile.userId}`} onClick={() => setChatting(true)} >
+                        <Link to={`/dating/messages/${profile.userId}`} onClick={() => setChatting(true)} >
                             <MatchCard {...profile} />
                         </Link>
                     </Col>)}

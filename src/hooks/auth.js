@@ -34,15 +34,11 @@ export function useUserID(){
       dispatch(authActions.checkAuthentication())    
     }
     
-    if(token){
+    if(token && !userId){
       setUserId(decode(token).id)
     }
   }, [])
 
-  useEffect(() => {
-    console.log("UserID changed: ", userId)
-  }, [userId])
-  
   useEffect(() => {
     if(token)
     setUserId(decode(token).id);

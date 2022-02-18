@@ -6,3 +6,51 @@
     align-items: center;
     margin: 0 !important;
 }
+.lackOfProfiles{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    p{
+        width: fit-content;
+        white-space: nowrap;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        word-spacing: -3px;
+    }
+
+}
+.empty-icon{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    animation: shiny 1s linear 0s infinite forwards alternate-reverse; 
+   
+}
+@keyframes shiny {
+    0% {
+      box-shadow: 
+        0 4px 10px rgb(252, 92, 92),
+        0 0 0 0 rgba(243, 103, 78, 0.877), 
+        0 0 0 10px rgba(255, 87, 75, 0.788),
+        0 0 0 20px rgba(241, 107, 107, 0.192);
+    }
+    100% {
+      box-shadow: 
+        0 4px 10px rgba(255, 110, 110, 0.192),
+        0 0 0 10px rgba(255, 92, 92, 0.274), 
+        0 0 0 20px rgba(241, 107, 107, 0.089),
+        0 0 0 30px rgba(241, 107, 107, 0.192);
+    }
+  }

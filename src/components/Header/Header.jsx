@@ -35,7 +35,7 @@ function Header(props){
                                 <Nav.Link href="/dating">Dating</Nav.Link>
                                 <Nav.Link href="/#home">Home</Nav.Link>
                                 <Nav.Link href="/#features">Features</Nav.Link>
-                                <Nav.Link href="/#introduce">Introduce</Nav.Link>
+                                <Nav.Link href="/#story">Story</Nav.Link>
                             </Nav>
                         </Navbar.Collapse>
                     </Container>
